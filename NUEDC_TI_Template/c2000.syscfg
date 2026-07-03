@@ -53,6 +53,9 @@ cputimer1.registerInterrupts       = true;
 cputimer1.startTimer               = true;
 cputimer1.timerInt.enableInterrupt = true;
 
+const default_warning = scripting.addModule("/driverlib/default_warning.js", {}, false);
+scripting.suppress("Add the \'Device Support\' module in order to use Clock Tree tool and generate device support files\\. This suggestion can be ignored if not using the Clock Tree tool\\.", default_warning);
+
 epwm1.$name                                                      = "EPWMA";
 epwm1.epwmTimebase_hsClockDiv                                    = "EPWM_HSCLOCK_DIVIDER_1";
 epwm1.epwmTimebase_counterMode                                   = "EPWM_COUNTER_MODE_UP_DOWN";

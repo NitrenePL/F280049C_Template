@@ -3,7 +3,11 @@
 
 #define ISR_FREQ 20000.f
 
+#define LED5_GPIO 23U
+#define LED_TOGGLE() GPIO_togglePin(LED5_GPIO)
+
 #include "device.h"
+#include "driverlib.h"
 #include <stdint.h>
 #include "c2000ware_libraries.h"
 
@@ -20,13 +24,13 @@ extern "C"
 
     extern float32_t Duty; // 占空比
     extern float32_t Set_Uout;
+    extern float32_t Uout;
+    extern float32_t Iout;
+    extern float32_t theta_ref;
+    extern float32_t Ua_pu;
+    extern float32_t Ub_pu;
+    extern float32_t Uc_pu;
 
-    extern char OLED_1[20];
-    extern char OLED_2[20];
-    extern char OLED_3[20];
-    extern char OLED_4[20];
-    extern char OLED_5[20];
-    extern char OLED_6[20];
 
 
     //! \brief          Return the maximum value of three floating-point numbers.
@@ -61,7 +65,6 @@ extern "C"
     void Setup(void);
     void Loop(void);
     void ReadData(void);
-    void Show_Data(void);
     void MyProtect(void);
 
 #ifdef __cplusplus

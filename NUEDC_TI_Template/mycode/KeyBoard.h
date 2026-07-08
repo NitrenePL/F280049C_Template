@@ -6,14 +6,14 @@
 #include "global.h"
 
 // 引脚定义
-#define KEYBOARD_IRQ_GPIO 25
-#define KEYBOARD_CK_GPIO  16
-#define KEYBOARD_DA_GPIO  17
-#define KEYBOARD_LD_GPIO  33
+#define KEYBOARD_IRQ_GPIO 14
+#define KEYBOARD_LD_GPIO  29
+#define KEYBOARD_DA_GPIO  30
+#define KEYBOARD_CK_GPIO  31
 
 // 函数声明
 void Keyboard_Init(void);
-void MYSELF_TIMER_Init(void);
+void KEYBOARD_TIMER_Init(void);
 uint16_t Keyboard_ReadData(void);
 void KeyBoard_Scan(void);
 void KeyAction(uint16_t key);

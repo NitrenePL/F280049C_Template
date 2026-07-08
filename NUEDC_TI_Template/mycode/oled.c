@@ -1,35 +1,105 @@
 #include "oled.h"
 #include "oledfont.h"
+#include "board.h"
 
-// 假设在 SysConfig 中配置的 I2C 模块为 myI2C0，基地址为 I2CA_BASE
-#define OLED_I2C_BASE   I2CA_BASE
-#define OLED_SLAVE_ADDR 0x3C // 7位地址 (0x78 >> 1)
+// 在 SysConfig 中配置的 I2C 模块为 myI2C0，基地址为 I2CA_BASE
+#define OLED_I2C_BASE   myI2C0_BASE
+#define OLED_I2C_SDA_GPIO myI2C0_I2CSDA_GPIO
+#define OLED_I2C_SCL_GPIO myI2C0_I2CSCL_GPIO
+#undef OLED_SLAVE_ADDR
+#define OLED_SLAVE_ADDR 0x3C
+#define OLED_I2C_TIMEOUT 100000UL
+
+static void OLED_I2C_BusRelease(void)
+{
+    uint16_t i;
+
+    I2C_disableModule(OLED_I2C_BASE);
+
+    GPIO_setPinConfig(GPIO_26_GPIO26);
+    GPIO_setPinConfig(GPIO_27_GPIO27);
+    GPIO_setPadConfig(OLED_I2C_SDA_GPIO, GPIO_PIN_TYPE_OD | GPIO_PIN_TYPE_PULLUP);
+    GPIO_setPadConfig(OLED_I2C_SCL_GPIO, GPIO_PIN_TYPE_OD | GPIO_PIN_TYPE_PULLUP);
+    GPIO_setQualificationMode(OLED_I2C_SDA_GPIO, GPIO_QUAL_ASYNC);
+    GPIO_setQualificationMode(OLED_I2C_SCL_GPIO, GPIO_QUAL_ASYNC);
+    GPIO_setDirectionMode(OLED_I2C_SDA_GPIO, GPIO_DIR_MODE_OUT);
+    GPIO_setDirectionMode(OLED_I2C_SCL_GPIO, GPIO_DIR_MODE_OUT);
+
+    GPIO_writePin(OLED_I2C_SDA_GPIO, 1U);
+    GPIO_writePin(OLED_I2C_SCL_GPIO, 1U);
+    DEVICE_DELAY_US(5);
+
+    for (i = 0U; i < 9U; i++)
+    {
+        GPIO_writePin(OLED_I2C_SCL_GPIO, 0U);
+        DEVICE_DELAY_US(5);
+        GPIO_writePin(OLED_I2C_SCL_GPIO, 1U);
+        DEVICE_DELAY_US(5);
+    }
+
+    GPIO_writePin(OLED_I2C_SDA_GPIO, 0U);
+    DEVICE_DELAY_US(5);
+    GPIO_writePin(OLED_I2C_SCL_GPIO, 1U);
+    DEVICE_DELAY_US(5);
+    GPIO_writePin(OLED_I2C_SDA_GPIO, 1U);
+    DEVICE_DELAY_US(5);
+
+    GPIO_setPinConfig(myI2C0_I2CSDA_PIN_CONFIG);
+    GPIO_setPinConfig(myI2C0_I2CSCL_PIN_CONFIG);
+    GPIO_setPadConfig(OLED_I2C_SDA_GPIO, GPIO_PIN_TYPE_STD | GPIO_PIN_TYPE_PULLUP);
+    GPIO_setPadConfig(OLED_I2C_SCL_GPIO, GPIO_PIN_TYPE_STD | GPIO_PIN_TYPE_PULLUP);
+    GPIO_setQualificationMode(OLED_I2C_SDA_GPIO, GPIO_QUAL_ASYNC);
+    GPIO_setQualificationMode(OLED_I2C_SCL_GPIO, GPIO_QUAL_ASYNC);
+
+    myI2C0_init();
+}
+
+static void OLED_I2C_Recover(void)
+{
+    I2C_sendStopCondition(OLED_I2C_BASE);
+    I2C_disableModule(OLED_I2C_BASE);
+    OLED_I2C_BusRelease();
+}
+
 
 /**********************************************
 // IIC 发送数据序列：[Start] -> [Addr+W] -> [Control Byte] -> [Data] -> [Stop]
 **********************************************/
 void I2C_Write_Byte(uint8_t control_byte, uint8_t data)
 {
-    // 1. 设置从机地址
-    I2C_setSlaveAddress(OLED_I2C_BASE, OLED_SLAVE_ADDR);
+    uint32_t timeout = OLED_I2C_TIMEOUT;
 
-    // 2. 设置要发送的数据量：1字节控制位 + 1字节数据
-    I2C_setDataCount(OLED_I2C_BASE, 2);
+    while (I2C_isBusBusy(OLED_I2C_BASE) && (--timeout > 0UL))
+    {
+    }
 
-    // 3. 发送模式设置：起始位 + 停止位 + 主机发送
-    I2C_setConfig(OLED_I2C_BASE, I2C_MASTER_SEND_MODE);
+    if (timeout == 0UL)
+    {
+        OLED_I2C_Recover();
+        return;
+    }
+
+    I2C_clearStatus(OLED_I2C_BASE, I2C_STS_NO_ACK | I2C_STS_ARB_LOST | I2C_STS_STOP_CONDITION);
+    I2C_setTargetAddress(OLED_I2C_BASE, OLED_SLAVE_ADDR);
+    I2C_setDataCount(OLED_I2C_BASE, 2U);
+    I2C_setConfig(OLED_I2C_BASE, I2C_CONTROLLER_SEND_MODE);
+
+    I2C_putData(OLED_I2C_BASE, control_byte);
+    I2C_putData(OLED_I2C_BASE, data);
     I2C_sendStartCondition(OLED_I2C_BASE);
     I2C_sendStopCondition(OLED_I2C_BASE);
 
-    // 4. 发送控制字节 (0x00命令或0x40数据)
-    I2C_putData(OLED_I2C_BASE, control_byte);
+    timeout = OLED_I2C_TIMEOUT;
+    while (I2C_getStopConditionStatus(OLED_I2C_BASE) && (--timeout > 0UL))
+    {
+    }
 
-    // 5. 发送实际数据
-    I2C_putData(OLED_I2C_BASE, data);
+    if (timeout == 0UL)
+    {
+        OLED_I2C_Recover();
+    }
 
-    // 6. 等待发送完成 (实际应用中建议使用 FIFO 检查或非阻塞方式)
-    while (I2C_isBusBusy(OLED_I2C_BASE))
-        ;
+    return;
 }
 
 void Write_IIC_Command(unsigned char i2c_cmd)
@@ -134,6 +204,7 @@ void OLED_Init(void)
 {
     // TI 平台上建议在初始化前给一点延时确保 OLED 供电稳定
     DEVICE_DELAY_US(100000);
+    OLED_I2C_BusRelease();
 
     OLED_WR_Byte(0xAE, OLED_CMD); // Display Off
     OLED_WR_Byte(0x00, OLED_CMD); // Set Low Column Address

@@ -46,7 +46,7 @@ void KeyAction(uint16_t key)
 }
 
 // 初始化定时器1，设置为50ms中断一次
-void MYSELF_TIMER_Init(void)
+void KEYBOARD_TIMER_Init(void)
 {
     // 1. 配置 CPUTimer1
     CPUTimer_setPeriod(CPUTIMER1_BASE, 0xFFFFFFFF);
@@ -74,20 +74,20 @@ void MYSELF_TIMER_Init(void)
 void Keyboard_Init(void)
 {
     // 配置输入：IRQ 和 DA
-    GPIO_setPinConfig(GPIO_33_GPIO33);
+    GPIO_setPinConfig(GPIO_14_GPIO14);
     GPIO_setDirectionMode(KEYBOARD_IRQ_GPIO, GPIO_DIR_MODE_IN);
     GPIO_setPadConfig(KEYBOARD_IRQ_GPIO, GPIO_PIN_TYPE_PULLUP); // 根据硬件情况可改为 STD 或 PULLUP
 
-    GPIO_setPinConfig(GPIO_17_GPIO17);
+    GPIO_setPinConfig(GPIO_30_GPIO30);
     GPIO_setDirectionMode(KEYBOARD_DA_GPIO, GPIO_DIR_MODE_IN);
     GPIO_setPadConfig(KEYBOARD_DA_GPIO, GPIO_PIN_TYPE_PULLUP);
 
     // 配置输出：CK 和 LD
-    GPIO_setPinConfig(GPIO_16_GPIO16);
+    GPIO_setPinConfig(GPIO_31_GPIO31);
     GPIO_setDirectionMode(KEYBOARD_CK_GPIO, GPIO_DIR_MODE_OUT);
     GPIO_writePin(KEYBOARD_CK_GPIO, 0);
 
-    GPIO_setPinConfig(GPIO_25_GPIO25);
+    GPIO_setPinConfig(GPIO_29_GPIO29);
     GPIO_setDirectionMode(KEYBOARD_LD_GPIO, GPIO_DIR_MODE_OUT);
     GPIO_writePin(KEYBOARD_LD_GPIO, 0);
 }
@@ -140,7 +140,8 @@ void KeyBoard_Scan(void)
 __interrupt void cpuTimer1ISR(void)
 {
     KeyBoard_Scan();
+    CPUTimer_clearOverflowFlag(CPUTIMER1_BASE);
 
     // Timer 1 和 Timer 2 是直接连接到 CPU 的核心中断 (INT13/INT14)
-    // 它们不属于 PIE 组，因此不需要执行 Interrupt_clearACKGroup
+    // 不属于 PIE 组，因此不需要执行 Interrupt_clearACKGroup
 }

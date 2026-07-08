@@ -18,6 +18,12 @@ const epwm        = scripting.addModule("/driverlib/epwm.js", {}, false);
 const epwm1       = epwm.addInstance();
 const epwm2       = epwm.addInstance();
 const epwm3       = epwm.addInstance();
+const gpio        = scripting.addModule("/driverlib/gpio.js", {}, false);
+const gpio1       = gpio.addInstance();
+const gpio2       = gpio.addInstance();
+const gpio3       = gpio.addInstance();
+const gpio4       = gpio.addInstance();
+const gpio5       = gpio.addInstance();
 const i2c         = scripting.addModule("/driverlib/i2c.js", {}, false);
 const i2c1        = i2c.addInstance();
 const controller  = scripting.addModule("/libraries/control/dcl/controller.js", {}, false);
@@ -156,6 +162,26 @@ epwm3.epwmEventTrigger_interruptEventCount                       = "1";
 epwm3.epwm.$assign                                               = "EPWM3";
 epwm3.epwm.epwm_aPin.$assign                                     = "GPIO4";
 epwm3.epwm.epwm_bPin.$assign                                     = "GPIO5";
+
+gpio1.$name           = "KEYBOARD_LD";
+gpio1.direction       = "GPIO_DIR_MODE_OUT";
+gpio1.gpioPin.$assign = "GPIO29";
+
+gpio2.$name           = "KEYBOARD_CK";
+gpio2.direction       = "GPIO_DIR_MODE_OUT";
+gpio2.gpioPin.$assign = "GPIO31";
+
+gpio3.$name           = "KEYBOARD_DA";
+gpio3.gpioPin.$assign = "GPIO30";
+
+gpio4.$name           = "KEYBOARD_IRQ";
+gpio4.gpioPin.$assign = "GPIO14";
+
+gpio5.$name             = "LED5";
+gpio5.direction         = "GPIO_DIR_MODE_OUT";
+gpio5.writeInitialValue = true;
+gpio5.initialValue      = 1;
+gpio5.gpioPin.$assign   = "GPIO23_VSW";
 
 i2c1.$name                  = "myI2C0";
 i2c1.useInterfacePins       = ["I2C@_SCL","I2C@_SDA"];

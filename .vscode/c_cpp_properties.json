@@ -47,8 +47,11 @@
                 "__meaud()=",
                 "__byte(x,y)=(*((volatile unsigned char *)(x) + (y)))",
                 "__byte_peripheral_32(x)=(*((volatile uint32_t *)(x)))",
+                "__fsat(x,max,min)=(((x) > (max)) ? (max) : (((x) < (min)) ? (min) : (x)))",
                 "__fmax(x,y)=(((x) > (y)) ? (x) : (y))",
                 "__fmin(x,y)=(((x) < (y)) ? (x) : (y))",
+                "__sin(x)=sinf(x)",
+                "__cos(x)=cosf(x)",
                 "asm(x)=",
                 "__attribute__(x)="
             ],

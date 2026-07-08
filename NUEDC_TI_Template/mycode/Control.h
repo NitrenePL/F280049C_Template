@@ -12,6 +12,8 @@
 #include "OLED_Display.h"
 #include <stdio.h>
 #include <string.h>
+#include "QPR.h"
+
 // #include "pll.h"
 
 #endif /* _CONTROL_H */

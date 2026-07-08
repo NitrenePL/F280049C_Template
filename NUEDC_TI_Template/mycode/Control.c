@@ -6,6 +6,7 @@ float32_t Uout, Iout;
 float32_t Duty = 0.05f;
 float32_t theta_ref = 0.f; // 参考相位
 float32_t Ua_pu, Ub_pu, Uc_pu;
+float32_t error, output;
 
 #pragma SET_DATA_SECTION()
 
@@ -70,6 +71,9 @@ __attribute__((section(".TI.ramfunc"))) __interrupt void ADC_SamplingISR(void)
     */
 
     DCL_runRefgen(&theta_REFGEN);
+
+    output = DCL_runDF22_C1(&QPR_Ctrl1, error);
+    
     theta_ref = DCL_getRefgenPhaseA(&theta_REFGEN);
     Ua_pu = 0.7f * __cos(CONST_2PI_32 * theta_ref);
     Ub_pu = 0.7f * __cos(CONST_2PI_32 * theta_ref - CONST_2PI_32 / 3.f);
@@ -88,14 +92,18 @@ void Loop(void)
 void Setup(void)
 {
     PWM_PRD = EPWM_getTimeBasePeriod(EPWM_A_BASE);
+    EPWM_Stop();
+
+    computeDF22_PRcontrollerCoeff(&QPR_Ctrl1, 3.f, 40.f, CONST_2PI_32 * 50.f, ISR_FREQ, CONST_2PI_32 * 2.f);
+    computeDF22_PRcontrollerCoeff(&QPR_Ctrl2, 3.f, 40.f, CONST_2PI_32 * 50.f, ISR_FREQ, CONST_2PI_32 * 2.f);
+    computeDF22_PRcontrollerCoeff(&QPR_Ctrl3, 3.f, 40.f, CONST_2PI_32 * 50.f, ISR_FREQ, CONST_2PI_32 * 2.f);
+
     DCL_resetPI(&myPID_Uout); // 复位PI输出函数
 
     Keyboard_Init();       // 初始化键盘GPIO
     KEYBOARD_TIMER_Init(); // 初始化键盘CPUTIMER1中断
 
-    EPWM_Stop();
-    
-    Interrupt_enable(INT_ADCA1);    // 使能主控中断
+    Interrupt_enable(INT_ADCA1); // 使能主控中断
 
     OLED_Display_Init();
 }

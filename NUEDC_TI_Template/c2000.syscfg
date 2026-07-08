@@ -28,6 +28,9 @@ const i2c         = scripting.addModule("/driverlib/i2c.js", {}, false);
 const i2c1        = i2c.addInstance();
 const controller  = scripting.addModule("/libraries/control/dcl/controller.js", {}, false);
 const controller1 = controller.addInstance();
+const controller2 = controller.addInstance();
+const controller3 = controller.addInstance();
+const controller4 = controller.addInstance();
 const logger      = scripting.addModule("/libraries/control/dcl/logger.js", {}, false);
 const logger1     = logger.addInstance();
 const logger2     = logger.addInstance();
@@ -196,6 +199,15 @@ controller1.Umin             = "0.0f";
 controller1.Imin             = "0";
 controller1.Ki               = "0.0001f";
 controller1.Kp               = "0.012f";
+
+controller2.$name            = "QPR_Ctrl1";
+controller2.controllerChoice = "DF22";
+
+controller3.$name            = "QPR_Ctrl2";
+controller3.controllerChoice = "DF22";
+
+controller4.$name            = "QPR_Ctrl3";
+controller4.controllerChoice = "DF22";
 
 logger1.$name     = "myLOGGER0";
 logger1.linkerEn  = true;

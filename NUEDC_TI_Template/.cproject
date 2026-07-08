@@ -476,6 +476,6 @@
         </cconfiguration>
     </storageModule>
     <storageModule moduleId="cdtBuildSystem" version="4.0.0">
-        <project id="Buck.com.ti.ccstudio.buildDefinitions.C2000.ProjectType.892985604" name="C2000" projectType="com.ti.ccstudio.buildDefinitions.C2000.ProjectType"/>
+        <project id="F280049C_Template.com.ti.ccstudio.buildDefinitions.C2000.ProjectType.892985604" name="C2000" projectType="com.ti.ccstudio.buildDefinitions.C2000.ProjectType"/>
     </storageModule>
 </cproject>

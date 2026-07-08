@@ -19,6 +19,9 @@
                 "${config:ccs.C2000WARE_ROOT}/libraries/control/DCL/c28/include",
                 "${config:ccs.C2000WARE_ROOT}/libraries/math/FPUfastRTS/c28/include"
             ],
+            "forcedInclude": [
+                "${config:ccs.CCS_PROJECT_DIR}/CPU1_FLASH/syscfg/c2000ware_libraries.h"
+            ],
             "defines": [
                 "CPU1",
                 "_FLASH",

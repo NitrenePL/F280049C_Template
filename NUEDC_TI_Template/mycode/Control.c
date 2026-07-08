@@ -21,10 +21,8 @@ __attribute__((section(".TI.ramfunc"))) __interrupt void INT_EPWMA_ISR(void)
         {
             EPWM_Start();
         }
-        // Duty =
-        // Ud = DCL_runPI_C3(&Igrid_d_PI, Id_ref, Igrid_DQ.d) + Igrid_DQ.q * W_Lout + Ugrid_DQ.d;
-        Duty = DCL_runPI_C3(&myPID_Uout, Set_Uout, Uout);
-        EPWM_OUTPUTA_duty(Duty);
+        // Duty = DCL_runPI_C3(&myPID_Uout, Set_Uout, Uout);
+        // EPWM_OUTPUTA_duty(Duty);
     }
     EPWM_clearEventTriggerInterruptFlag(EPWMA_BASE);
     Interrupt_clearACKGroup(INTERRUPT_ACK_GROUP3);

@@ -7,9 +7,9 @@
 void ab_to_dq(float Alpha, float Beta, float wt, float *d, float *q)
 {
     float s, c;
-    // TI C2000 在开启 TMU 后，sinf/cosf 是极速的硬件指令
-    s = sinf(wt);
-    c = cosf(wt);
+    // TI C2000 在开启 TMU 后，sinf/__cos 是极速的硬件指令
+    s = __sin(wt);
+    c = __cos(wt);
 
     *d = Beta * s + Alpha * c;
     *q = Beta * c - Alpha * s;
@@ -21,8 +21,8 @@ void ab_to_dq(float Alpha, float Beta, float wt, float *d, float *q)
 void dq_to_AlphaBeta(float *Alpha, float *Beta, float wt, float d, float q)
 {
     float s, c;
-    s = sinf(wt);
-    c = cosf(wt);
+    s = __sin(wt);
+    c = __cos(wt);
 
     *Alpha = d * c - q * s;
     *Beta = d * s + q * c;
@@ -48,12 +48,12 @@ void abc_to_dqz(float a, float b, float c, float wt, float *d, float *q, float *
             theta[i] -= 2.0f * PI;
     }
 
-    c0 = cosf(theta[0]);
-    c1 = cosf(theta[1]);
-    c2 = cosf(theta[2]);
-    s0 = sinf(theta[0]);
-    s1 = sinf(theta[1]);
-    s2 = sinf(theta[2]);
+    c0 = __cos(theta[0]);
+    c1 = __cos(theta[1]);
+    c2 = __cos(theta[2]);
+    s0 = __sin(theta[0]);
+    s1 = __sin(theta[1]);
+    s2 = __sin(theta[2]);
 
     *d = (2.0f / 3.0f) * (a * c0 + b * c1 + c * c2);
     *q = (-2.0f / 3.0f) * (a * s0 + b * s1 + c * s2);
@@ -77,7 +77,7 @@ void dqz_to_abc(float *a, float *b, float *c, float wt, float d, float q, float 
             theta[i] -= 2.0f * PI;
     }
 
-    *a = d * cosf(theta[0]) - q * sinf(theta[0]) + z;
-    *b = d * cosf(theta[1]) - q * sinf(theta[1]) + z;
-    *c = d * cosf(theta[2]) - q * sinf(theta[2]) + z;
+    *a = d * __cos(theta[0]) - q * __sin(theta[0]) + z;
+    *b = d * __cos(theta[1]) - q * __sin(theta[1]) + z;
+    *c = d * __cos(theta[2]) - q * __sin(theta[2]) + z;
 }

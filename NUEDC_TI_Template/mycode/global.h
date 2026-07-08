@@ -1,36 +1,63 @@
 #ifndef GLOBAL_VARS_H
 #define GLOBAL_VARS_H
 
+#define ISR_FREQ 20000.f
+
 #include "device.h"
 #include <stdint.h>
+#include "c2000ware_libraries.h"
+
 
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
+    extern uint16_t PWM_PRD;
+    extern uint8_t Open; // 开波标志：1-开，0-关
+    extern uint8_t MODE; // 模式变量
+    extern uint8_t LAST_MODE;
 
-    // ==============================================================================
-    // 常用全局变量声明 (注意：extern 只声明，不分配内存)
-    // ==============================================================================
-    extern int32_t period;
-    extern int32_t Open; // 开波标志：1-开，0-关
-    extern int32_t MODE; // 模式变量
-    extern int32_t LAST_MODE;
-    // ==============================================================================
-    // 临时全局变量声明 (注意：extern 只声明，不分配内存)
-    // ==============================================================================
     extern float32_t Duty; // 占空比
     extern float32_t Set_Uout;
-    // ==============================================================================
-    // 函数原型声明
-    // ==============================================================================
 
-    // 限幅函数
-    int32_t Limit_Int(int32_t input, int32_t MAX, int32_t MIN);
-    float Limit_Float(float input, float MAX, float MIN);
+    extern char OLED_1[20];
+    extern char OLED_2[20];
+    extern char OLED_3[20];
+    extern char OLED_4[20];
+    extern char OLED_5[20];
+    extern char OLED_6[20];
 
-    // 框架逻辑函数（需在 main.c 或 Control.c 中实现）
+
+    //! \brief          Return the maximum value of three floating-point numbers.
+    //!
+    //! \param[in]      a        First value.
+    //! \param[in]      b        Second value.
+    //! \param[in]      c        Third value.
+    //!
+    //! \return         Maximum value.
+    //
+    static inline float max3f(float a, float b, float c)
+    {
+        float m = (a > b) ? a : b;
+        return (m > c) ? m : c;
+    }
+
+    //! \brief          Return the minimum value of three floating-point numbers.
+    //!
+    //! \param[in]      a        First value.
+    //! \param[in]      b        Second value.
+    //! \param[in]      c        Third value.
+    //!
+    //! \return         Minimum value.
+    //
+    static inline float min3f(float a, float b, float c)
+    {
+        float m = (a < b) ? a : b;
+        return (m < c) ? m : c;
+    }
+
+    // 框架逻辑函数
     void Setup(void);
     void Loop(void);
     void ReadData(void);

@@ -12,12 +12,6 @@
 #include "oled.h"
 #include <stdio.h>
 #include <string.h>
-
-char OLED_1[20];
-char OLED_2[20];
-char OLED_3[20];
-char OLED_4[20];
-char OLED_5[20];
-char OLED_6[20];
+// #include "pll.h"
 
 #endif /* _CONTROL_H */

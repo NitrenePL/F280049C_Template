@@ -4,7 +4,7 @@
 #include "device.h"
 #include "driverlib.h"
 #include "global.h"
-#include <math.h>
+#include "math.h"
 
 // 宏定义：方便修改映射关系
 #define EPWM_A_BASE EPWM1_BASE
@@ -18,19 +18,8 @@
 void EPWM_Start(void);
 void EPWM_Stop(void);
 
-void EPWM_OUTPUTA_duty(float duty);
-void EPWM_OUTPUTB_duty(float duty);
-void EPWM_OUTPUTB_phase(float phase);
-void EPWM_OUTPUTC_duty(float duty);
-void EPWM_OUTPUTC_phase(float phase);
-void EPWM_OUTPUTD_duty(float duty);
-void EPWM_OUTPUTD_phase(float phase);
-void EPWM_OUTPUTE_duty(float duty);
-void EPWM_OUTPUTE_phase(float phase);
-void EPWM_OUTPUTF_duty(float duty);
 
-void SVPWMmodulation(float Ur, float Udc, float theta);
-void SVPWM1(float a, float b);
+void CB_SVPWM_3Ph(float Ua_pu, float Ub_pu, float Uc_pu);
 void SPWM(float D);
 
 #endif

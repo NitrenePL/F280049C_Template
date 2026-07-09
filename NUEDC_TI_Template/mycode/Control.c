@@ -61,10 +61,7 @@ __interrupt void INT_myCPUTIMER0_ISR(void)
     Interrupt_clearACKGroup(INTERRUPT_ACK_GROUP1);
 }
 
-/**
- * @brief ADC转换完成中断中的实时控制环。
- * @note 关键步骤耗时@100MHz: ADC读数40clks, Refgen360clks, DF22 37clks, PhaseA 24clks, PLL 650clks, SVPWM 332clks。
- */
+// ADC_INT 中断服务函数 主控中断 20kHz
 RAMFUNC __interrupt void ADC_SamplingISR(void)
 {
     Uab_inst = 3.3f / 4096.f * ADC_readResult(ADCARESULT_BASE, ADC_SOC_NUMBER0); // 40 clks

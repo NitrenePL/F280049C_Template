@@ -5,8 +5,7 @@
 #include "c2000ware_libraries.h"
 #include "device.h"
 #include "driverlib.h"
-#include "global.h"
-
+#include "Control.h"
 
 // #include "keyboard.h"
 

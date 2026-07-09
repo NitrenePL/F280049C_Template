@@ -35,42 +35,7 @@ extern "C"
     extern float32_t error;
     extern float32_t output;
 
-
-
-    //! \brief          Return the maximum value of three floating-point numbers.
-    //!
-    //! \param[in]      a        First value.
-    //! \param[in]      b        Second value.
-    //! \param[in]      c        Third value.
-    //!
-    //! \return         Maximum value.
-    //
-    static inline float max3f(float a, float b, float c)
-    {
-        float m = (a > b) ? a : b;
-        return (m > c) ? m : c;
-    }
-
-    //! \brief          Return the minimum value of three floating-point numbers.
-    //!
-    //! \param[in]      a        First value.
-    //! \param[in]      b        Second value.
-    //! \param[in]      c        Third value.
-    //!
-    //! \return         Minimum value.
-    //
-    static inline float min3f(float a, float b, float c)
-    {
-        float m = (a < b) ? a : b;
-        return (m < c) ? m : c;
-    }
-
-    // 框架逻辑函数
-    void Setup(void);
-    void Loop(void);
-    void ReadData(void);
-    void MyProtect(void);
-
+    
 #ifdef __cplusplus
 }
 #endif

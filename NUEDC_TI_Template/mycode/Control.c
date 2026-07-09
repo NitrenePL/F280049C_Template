@@ -1,4 +1,13 @@
 #include "Control.h"
+#include "DCLF32.h"
+#include "KeyBoard.h"
+#include "OLED_Display.h"
+#include "PLL.h"
+#include "QPR.h"
+#include "RMS.h"
+#include "global.h"
+#include "myEpwm.h"
+
 
 // OLED屏幕刷新率, 当前15Hz
 #define OLED_REFRESH_RATE_HZ 15U
@@ -23,6 +32,10 @@ uint16_t PWM_PRD = 0; // 假设默认周期值
 uint8_t Open = 0;     // 默认关闭
 uint8_t MODE = 0;     // 默认模式0
 uint8_t LAST_MODE = 0;
+
+RMS_Obj Uan_RMS;
+float32_t Uan_rms;
+
 #pragma SET_DATA_SECTION()
 
 // Timer0 中断服务函数 慢速任务 1kHz
@@ -65,7 +78,9 @@ RAMFUNC __interrupt void ADC_SamplingISR(void)
     Ub_pu = 0.7f * __cos(CONST_2PI_32 * theta_ref - CONST_2PI_32 / 3.f);
     Uc_pu = 0.7f * __cos(CONST_2PI_32 * theta_ref + CONST_2PI_32 / 3.f);
 
-    PLL_Calc(Uab_inst); // 650 clks
+    // PLL_Calc(Uab_inst); // 650 clks
+
+    Uan_rms = RMS_Calc(&Uan_RMS, Uab_inst); 
 
     CB_SVPWM_3Ph(Ua_pu, Ub_pu, Uc_pu); // 332 clks
 
@@ -86,13 +101,17 @@ void Setup(void)
     computeDF22_PRcontrollerCoeff(&QPR_Ctrl2, 3.f, 40.f, CONST_2PI_32 * 50.f, ISR_FREQ, CONST_2PI_32 * 2.f);
     computeDF22_PRcontrollerCoeff(&QPR_Ctrl3, 3.f, 40.f, CONST_2PI_32 * 50.f, ISR_FREQ, CONST_2PI_32 * 2.f);
 
-    // 复位控制器函数
+    // 控制器初始化
     DCL_resetPI(&myPID_Uout);
     DCL_resetDF22(&QPR_Ctrl1);
     DCL_resetDF22(&QPR_Ctrl2);
     DCL_resetDF22(&QPR_Ctrl3);
 
+    // 锁相环初始化
     PLL_Init();
+
+    // RMS 有效值计算初始化
+    RMS_Init(&Uan_RMS);
 
     Keyboard_Init();       // 初始化键盘GPIO
     KEYBOARD_TIMER_Init(); // 初始化键盘CPUTIMER1中断

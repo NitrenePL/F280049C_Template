@@ -1,19 +1,17 @@
-#ifndef _CONTROL_H
-#define _CONTROL_H
+#ifndef CONTROL_H_
+#define CONTROL_H_
 
-#include "main.h"
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 
-#include "c2000ware_libraries.h"
+void Setup(void);
+void Loop(void);
+void MyProtect(void);
 
-#include "DCLF32.h"
-#include "KeyBoard.h"
-#include "global.h"
-#include "myEpwm.h"
-#include "OLED_Display.h"
-#include <stdio.h>
-#include <string.h>
-#include "QPR.h"
+#ifdef __cplusplus
+}
+#endif
 
-#include "pll.h"
-
-#endif /* _CONTROL_H */
+#endif /* CONTROL_H_ */

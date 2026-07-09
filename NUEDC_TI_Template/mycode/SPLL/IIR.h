@@ -30,6 +30,12 @@ static inline void IIR2nd_Init(IIRStructure *S, const float *pNum, const float *
     IIR2nd_Clear(S);
 }
 
+/**
+ * @brief 二阶IIR滤波计算。
+ * @param S IIR滤波器状态与系数。
+ * @param input 当前输入采样值。
+ * @return 当前滤波输出。
+ */
 static inline RAMFUNC float IIR2nd_Calc(IIRStructure *S, float input)
 {
     float out;

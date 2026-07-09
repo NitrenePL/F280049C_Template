@@ -45,6 +45,12 @@ static inline void PID_Init(PIDStructure *sptr, const float kp, const float ki, 
  * PID 计算
  * 对于 Buck 变换器：fdb 是采集的输出电压，ref 是目标电压，返回的是占空比
  */
+/**
+ * @brief PI/PID控制器计算。
+ * @param sptr PID控制器状态与参数。
+ * @param fdb 当前反馈值。
+ * @return 限幅后的控制器输出。
+ */
 static inline RAMFUNC float PID_Calc(PIDStructure *sptr, const float fdb)
 {
     float error;

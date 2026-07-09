@@ -45,9 +45,11 @@ void PLL_Init(void)
 
 }
 
-// -------------------------------------------------------------------------
-// PLL 计算 (20kHz)
-// -------------------------------------------------------------------------
+/**
+ * @brief 20kHz(默认)软件锁相环计算。
+ * @param input 输入电压瞬时值。
+ * @note 输出到全局变量theta、w、PLL_Locked；约650 CPU clks @100MHz。
+ */
 RAMFUNC void PLL_Calc(float input)
 {
     static float phaseError = 0, iirInput, IIRtheta = 0;
@@ -136,6 +138,11 @@ void PLL_Init_myself(void)
     IIR2nd_Init(&iirInputSec2Struct_myself, iirInputSec2Num, iirInputSec2Den);
 }
 
+/**
+ * @brief 20kHz软件锁相环备用计算通道。
+ * @param input 输入电压瞬时值。
+ * @note 输出到全局变量theta_myself、w_myself、PLL_Locked_myself。
+ */
 RAMFUNC void PLL_Calc_myself(float input)
 {
     static float phaseError = 0, iirInput, IIRtheta = 0;

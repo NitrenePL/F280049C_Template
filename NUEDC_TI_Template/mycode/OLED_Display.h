@@ -9,6 +9,8 @@ extern "C"
 void OLED_Display_Init(void);
 void OLED_Display_RequestRefresh(void);
 void OLED_Display_Task(void);
+void OLED_Display_NextPage(void);
+void OLED_Display_PrevPage(void);
 
 #ifdef __cplusplus
 }

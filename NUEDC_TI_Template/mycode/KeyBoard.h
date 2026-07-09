@@ -4,6 +4,7 @@
 #include "device.h"
 #include "driverlib.h"
 #include "global.h"
+#include "OLED_Display.h"
 
 // 引脚定义
 #define KEYBOARD_IRQ_GPIO 14

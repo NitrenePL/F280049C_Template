@@ -1,5 +1,8 @@
 #include "Control.h"
 
+#define OLED_REFRESH_RATE_HZ 15U
+#define SLOW_TASK_RATE_HZ    1000U
+
 #pragma SET_DATA_SECTION("controlVariables")
 // 高速RAM变量放在这里, 例如电流环、滤波器等
 float32_t Uout, Iout;
@@ -24,11 +27,12 @@ uint8_t LAST_MODE = 0;
 __interrupt void INT_myCPUTIMER0_ISR(void)
 {
     static uint16_t ledTaskCnt = 0;
-    static uint16_t oledTaskCnt = 0;
+    static uint16_t oledRefreshAcc = 0;
 
-    if (++oledTaskCnt >= 10U)
+    oledRefreshAcc = (uint16_t)(oledRefreshAcc + OLED_REFRESH_RATE_HZ);
+    if (oledRefreshAcc >= SLOW_TASK_RATE_HZ)
     {
-        oledTaskCnt = 0U;
+        oledRefreshAcc = (uint16_t)(oledRefreshAcc - SLOW_TASK_RATE_HZ);
         OLED_Display_RequestRefresh();
     }
 

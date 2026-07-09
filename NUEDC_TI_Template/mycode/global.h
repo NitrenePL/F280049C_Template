@@ -30,6 +30,8 @@ extern "C"
     extern float32_t Ua_pu;
     extern float32_t Ub_pu;
     extern float32_t Uc_pu;
+    extern float32_t error;
+    extern float32_t output;
 
 
 

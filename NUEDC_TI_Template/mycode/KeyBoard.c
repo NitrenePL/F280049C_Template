@@ -39,8 +39,10 @@ void KeyAction(uint16_t key)
         case 14:
             break;
         case 15:
+            OLED_Display_PrevPage();
             break;
         case 16:
+            OLED_Display_NextPage();
             break;
     }
 }

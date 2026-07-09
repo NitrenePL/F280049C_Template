@@ -2,22 +2,47 @@
 #define IIR_H_
 
 #include <stdint.h>
+#include "global.h"
 
-/**
- * 二阶 IIR 滤波器结构体 (直接 I 型)
- * 传递函数: H(z) = (b0 + b1*z^-1 + b2*z^-2) / (1 + a1*z^-1 + a2*z^-2)
- */
 typedef struct
 {
-    float inBuf[2];  // 输入状态缓冲区: x[n-1], x[n-2]
-    float outBuf[2]; // 输出状态缓冲区: y[n-1], y[n-2]
-    float Num[3];    // 分子系数 (b0, b1, b2)
-    float Den[2];    // 分母系数 (a1, a2) -> 注意: a0 默认为 1.0
+    float inBuf[2];
+    float outBuf[2];
+    float Num[3];
+    float Den[2];
 } IIRStructure;
 
-// 函数声明
-void IIR2nd_Init(IIRStructure *S, const float *pNum, const float *pDen);
-float IIR2nd_Calc(IIRStructure *S, float input);
-void IIR2nd_Clear(IIRStructure *S);
+static inline void IIR2nd_Clear(IIRStructure *S)
+{
+    S->inBuf[0] = 0.0f;
+    S->inBuf[1] = 0.0f;
+    S->outBuf[0] = 0.0f;
+    S->outBuf[1] = 0.0f;
+}
+
+static inline void IIR2nd_Init(IIRStructure *S, const float *pNum, const float *pDen)
+{
+    S->Num[0] = pNum[0];
+    S->Num[1] = pNum[1];
+    S->Num[2] = pNum[2];
+    S->Den[0] = pDen[0];
+    S->Den[1] = pDen[1];
+    IIR2nd_Clear(S);
+}
+
+static inline RAMFUNC float IIR2nd_Calc(IIRStructure *S, float input)
+{
+    float out;
+
+    out = (S->Num[0] * input) + (S->Num[1] * S->inBuf[0]) + (S->Num[2] * S->inBuf[1]) -
+          (S->Den[0] * S->outBuf[0]) - (S->Den[1] * S->outBuf[1]);
+
+    S->inBuf[1] = S->inBuf[0];
+    S->inBuf[0] = input;
+    S->outBuf[1] = S->outBuf[0];
+    S->outBuf[0] = out;
+
+    return out;
+}
 
 #endif /* IIR_H_ */

@@ -3,6 +3,7 @@
 // -------------------------------------------------------------------------
 // 变量定义
 // -------------------------------------------------------------------------
+#pragma SET_DATA_SECTION("logVariables")
 PIDStructure pid_PLL;
 float theta = 0.0f;
 float w = 100.0f * PI; // 默认 50Hz 基频
@@ -26,6 +27,7 @@ const float iirInputSec2Num[3] = {0.005378494f, 0.010756988f, 0.005378494f};
 const float iirInputSec2Den[2] = {-1.725933395f, 0.747447371f};
 const float iirPLLNum[3] = {0.000000616f, 0.000001232f, 0.000000616f};
 const float iirPLLDen[2] = {-1.997778559f, 0.997781024f};
+#pragma SET_DATA_SECTION()
 
 // -------------------------------------------------------------------------
 // PLL 初始化
@@ -41,20 +43,12 @@ void PLL_Init(void)
     IIR2nd_Init(&iirInputSec1Struct, iirInputSec1Num, iirInputSec1Den);
     IIR2nd_Init(&iirInputSec2Struct, iirInputSec2Num, iirInputSec2Den);
 
-    // 初始化 GPIO (LED)
-    GPIO_setDirectionMode(PLL_LED_1_GPIO, GPIO_DIR_MODE_OUT);
-    GPIO_setPadConfig(PLL_LED_1_GPIO, GPIO_PIN_TYPE_STD);
-    GPIO_writePin(PLL_LED_1_GPIO, 1); // 默认灭
-
-    GPIO_setDirectionMode(PLL_LED_2_GPIO, GPIO_DIR_MODE_OUT);
-    GPIO_setPadConfig(PLL_LED_2_GPIO, GPIO_PIN_TYPE_STD);
-    GPIO_writePin(PLL_LED_2_GPIO, 1);
 }
 
 // -------------------------------------------------------------------------
 // PLL 计算 (20kHz)
 // -------------------------------------------------------------------------
-void PLL_Calc(float input)
+RAMFUNC void PLL_Calc(float input)
 {
     static float phaseError = 0, iirInput, IIRtheta = 0;
     static int16_t phaseErrorNoFiltered = 0;
@@ -128,8 +122,6 @@ void PLL_Calc(float input)
         lockHold = 0;
     }
 
-    // LED 指示
-    GPIO_writePin(PLL_LED_2_GPIO, PLL_Locked ? 0 : 1); // 亮或灭
 }
 
 // -------------------------------------------------------------------------
@@ -144,7 +136,7 @@ void PLL_Init_myself(void)
     IIR2nd_Init(&iirInputSec2Struct_myself, iirInputSec2Num, iirInputSec2Den);
 }
 
-void PLL_Calc_myself(float input)
+RAMFUNC void PLL_Calc_myself(float input)
 {
     static float phaseError = 0, iirInput, IIRtheta = 0;
     static int16_t phaseErrorNoFiltered = 0;
@@ -209,5 +201,4 @@ void PLL_Calc_myself(float input)
         lockHold_myself = 0;
     }
 
-    GPIO_writePin(PLL_LED_1_GPIO, PLL_Locked_myself ? 0 : 1);
 }

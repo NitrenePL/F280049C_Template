@@ -61,6 +61,8 @@ RAMFUNC __interrupt void ADC_SamplingISR(void)
     Ub_pu = 0.7f * __cos(CONST_2PI_32 * theta_ref - CONST_2PI_32 / 3.f);
     Uc_pu = 0.7f * __cos(CONST_2PI_32 * theta_ref + CONST_2PI_32 / 3.f);
 
+    PLL_Calc(Uab_inst); // 650 clks
+
     CB_SVPWM_3Ph(Ua_pu, Ub_pu, Uc_pu); // 332 clks
 
     ADC_clearInterruptStatus(ADCA_BASE, ADC_INT_NUMBER1);
@@ -81,11 +83,12 @@ void Setup(void)
     computeDF22_PRcontrollerCoeff(&QPR_Ctrl3, 3.f, 40.f, CONST_2PI_32 * 50.f, ISR_FREQ, CONST_2PI_32 * 2.f);
 
     // 复位控制器函数
-    DCL_resetPI(&myPID_Uout); 
-    DCL_resetDF22(&QPR_Ctrl1); 
+    DCL_resetPI(&myPID_Uout);
+    DCL_resetDF22(&QPR_Ctrl1);
     DCL_resetDF22(&QPR_Ctrl2);
     DCL_resetDF22(&QPR_Ctrl3);
 
+    PLL_Init();
 
     Keyboard_Init();       // 初始化键盘GPIO
     KEYBOARD_TIMER_Init(); // 初始化键盘CPUTIMER1中断

@@ -14,6 +14,6 @@
 #include <string.h>
 #include "QPR.h"
 
-// #include "pll.h"
+#include "pll.h"
 
 #endif /* _CONTROL_H */

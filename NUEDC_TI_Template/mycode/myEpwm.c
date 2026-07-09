@@ -63,7 +63,7 @@ void SPWM(float D)
 //!
 //! \return         None
 //!
-void CB_SVPWM_3Ph(float Ua_pu, float Ub_pu, float Uc_pu)
+RAMFUNC void CB_SVPWM_3Ph(float Ua_pu, float Ub_pu, float Uc_pu)
 {
     float Umax, Umin, Uzero;
     float Ua_svpwm, Ub_svpwm, Uc_svpwm;

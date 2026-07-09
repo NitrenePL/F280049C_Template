@@ -1,5 +1,6 @@
 #include "Control.h"
 
+// OLED屏幕刷新率, 当前15Hz
 #define OLED_REFRESH_RATE_HZ 15U
 #define SLOW_TASK_RATE_HZ    1000U
 
@@ -10,6 +11,7 @@ float32_t Duty = 0.05f;
 float32_t theta_ref = 0.f; // 参考相位
 float32_t Ua_pu, Ub_pu, Uc_pu;
 float32_t error, output;
+float32_t Uab_inst, Ucb_inst; // 线电压瞬时值
 
 #pragma SET_DATA_SECTION()
 
@@ -23,7 +25,7 @@ uint8_t MODE = 0;     // 默认模式0
 uint8_t LAST_MODE = 0;
 #pragma SET_DATA_SECTION()
 
-// Timer0 中断服务函数 慢速任务 1ms周期
+// Timer0 中断服务函数 慢速任务 1kHz
 __interrupt void INT_myCPUTIMER0_ISR(void)
 {
     static uint16_t ledTaskCnt = 0;
@@ -36,7 +38,7 @@ __interrupt void INT_myCPUTIMER0_ISR(void)
         OLED_Display_RequestRefresh();
     }
 
-    if (++ledTaskCnt >= 200U)
+    if (++ledTaskCnt >= 400U)
     {
         ledTaskCnt = 0U;
         LED_TOGGLE();
@@ -46,44 +48,20 @@ __interrupt void INT_myCPUTIMER0_ISR(void)
     Interrupt_clearACKGroup(INTERRUPT_ACK_GROUP1);
 }
 
-__attribute__((section(".TI.ramfunc"))) __interrupt void ADC_SamplingISR(void)
+RAMFUNC __interrupt void ADC_SamplingISR(void)
 {
-    /*
-    static float filter = 0;
-    static float last_filter = 0;
+    Uab_inst = 3.3f / 4096.f * ADC_readResult(ADCARESULT_BASE, ADC_SOC_NUMBER0); // 40 clks
 
-    filter = 0.01f * ADC_readResult(ADCARESULT_BASE, ADC_SOC_NUMBER0) + 0.99f * last_filter;
-    last_filter = filter;
-    Uout = filter * 0.01254755f + 0.002526192f;
+    DCL_runRefgen(&theta_REFGEN); // 360 clks
 
+    output = DCL_runDF22_C1(&QPR_Ctrl1, error); // 37 clks
 
-    if (MODE == 0)
-    {
-        EPWM_Stop();
-        DCL_resetPI(&myPID_Uout);
-    }
-    else if (MODE == 1)
-    {
-        if (LAST_MODE == 0)
-        {
-            EPWM_Start();
-        }
-        // Duty = DCL_runPI_C3(&myPID_Uout, Set_Uout, Uout);
-        // EPWM_OUTPUTA_duty(Duty);
-    }
-    LAST_MODE = MODE;
-    */
-
-    DCL_runRefgen(&theta_REFGEN);
-
-    output = DCL_runDF22_C1(&QPR_Ctrl1, error);
-    
-    theta_ref = DCL_getRefgenPhaseA(&theta_REFGEN);
+    theta_ref = DCL_getRefgenPhaseA(&theta_REFGEN); // 24 clks
     Ua_pu = 0.7f * __cos(CONST_2PI_32 * theta_ref);
     Ub_pu = 0.7f * __cos(CONST_2PI_32 * theta_ref - CONST_2PI_32 / 3.f);
     Uc_pu = 0.7f * __cos(CONST_2PI_32 * theta_ref + CONST_2PI_32 / 3.f);
 
-    CB_SVPWM_3Ph(Ua_pu, Ub_pu, Uc_pu); // 385 clks
+    CB_SVPWM_3Ph(Ua_pu, Ub_pu, Uc_pu); // 332 clks
 
     ADC_clearInterruptStatus(ADCA_BASE, ADC_INT_NUMBER1);
     Interrupt_clearACKGroup(INTERRUPT_ACK_GROUP1);
@@ -102,7 +80,12 @@ void Setup(void)
     computeDF22_PRcontrollerCoeff(&QPR_Ctrl2, 3.f, 40.f, CONST_2PI_32 * 50.f, ISR_FREQ, CONST_2PI_32 * 2.f);
     computeDF22_PRcontrollerCoeff(&QPR_Ctrl3, 3.f, 40.f, CONST_2PI_32 * 50.f, ISR_FREQ, CONST_2PI_32 * 2.f);
 
-    DCL_resetPI(&myPID_Uout); // 复位PI输出函数
+    // 复位控制器函数
+    DCL_resetPI(&myPID_Uout); 
+    DCL_resetDF22(&QPR_Ctrl1); 
+    DCL_resetDF22(&QPR_Ctrl2);
+    DCL_resetDF22(&QPR_Ctrl3);
+
 
     Keyboard_Init();       // 初始化键盘GPIO
     KEYBOARD_TIMER_Init(); // 初始化键盘CPUTIMER1中断

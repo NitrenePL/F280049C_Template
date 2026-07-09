@@ -19,7 +19,7 @@ void EPWM_Start(void);
 void EPWM_Stop(void);
 
 
-void CB_SVPWM_3Ph(float Ua_pu, float Ub_pu, float Uc_pu);
+RAMFUNC void CB_SVPWM_3Ph(float Ua_pu, float Ub_pu, float Uc_pu);
 void SPWM(float D);
 
 #endif

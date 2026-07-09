@@ -3,6 +3,8 @@
 
 #define ISR_FREQ 20000.f
 
+#define RAMFUNC __attribute__((section(".TI.ramfunc")))
+
 #define LED5_GPIO 23U
 #define LED_TOGGLE() GPIO_togglePin(LED5_GPIO)
 

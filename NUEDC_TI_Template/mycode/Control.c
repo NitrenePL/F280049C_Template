@@ -8,7 +8,6 @@
 #include "global.h"
 #include "myEpwm.h"
 
-
 // OLED屏幕刷新率, 当前15Hz
 #define OLED_REFRESH_RATE_HZ 15U
 #define SLOW_TASK_RATE_HZ    1000U
@@ -61,6 +60,10 @@ __interrupt void INT_myCPUTIMER0_ISR(void)
     Interrupt_clearACKGroup(INTERRUPT_ACK_GROUP1);
 }
 
+uint32_t cmp_integer;
+uint32_t cmp_fraction_8bit;
+uint32_t cmp_hr;
+
 // ADC_INT 中断服务函数 主控中断 20kHz
 RAMFUNC __interrupt void ADC_SamplingISR(void)
 {
@@ -80,6 +83,9 @@ RAMFUNC __interrupt void ADC_SamplingISR(void)
     Uan_rms = RMS_Calc(&Uan_RMS, Uab_inst); 
 
     CB_SVPWM_3Ph(Ua_pu, Ub_pu, Uc_pu); // 332 clks
+    
+    cmp_hr = (cmp_integer << 8) | cmp_fraction_8bit;
+    HRPWM_setCounterCompareValue(EPWMA1_BASE, HRPWM_COUNTER_COMPARE_A, cmp_hr);
 
     ADC_clearInterruptStatus(ADCA_BASE, ADC_INT_NUMBER1);
     Interrupt_clearACKGroup(INTERRUPT_ACK_GROUP1);

@@ -61,7 +61,7 @@ __interrupt void INT_myCPUTIMER0_ISR(void)
     Interrupt_clearACKGroup(INTERRUPT_ACK_GROUP1);
 }
 
-// ADC_INT 中断服务函数 主控中断 20kHz
+// ADC_INT 中断服务函数 主控中断 50kHz
 RAMFUNC __interrupt void ADC_SamplingISR(void)
 {
     Uab_inst = 3.3f / 4096.f * ADC_readResult(ADCARESULT_BASE, ADC_SOC_NUMBER0); // 40 clks

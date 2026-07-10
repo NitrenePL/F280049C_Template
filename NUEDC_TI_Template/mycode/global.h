@@ -1,7 +1,7 @@
 #ifndef GLOBAL_VARS_H
 #define GLOBAL_VARS_H
 
-#define ISR_FREQ 20000.f
+#define ISR_FREQ 50000.f
 
 #define RAMFUNC __attribute__((section(".TI.ramfunc")))
 

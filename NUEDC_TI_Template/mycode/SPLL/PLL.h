@@ -9,7 +9,10 @@
 #define PI 3.14159265358979f
 #endif
 
-#define PLL_SAMPLING_FREQ 20000.0f
+#define PLL_SAMPLING_FREQ ISR_FREQ
+#define PLL_LOCK_HOLD_LIMIT ((uint32_t)(PLL_SAMPLING_FREQ))
+#define PLL_LOCK_HOLD_ON_THRESHOLD ((uint32_t)(0.99f * PLL_SAMPLING_FREQ))
+#define PLL_LOCK_HOLD_OFF_THRESHOLD ((uint32_t)(0.75f * PLL_SAMPLING_FREQ))
 
 extern float theta, w;
 extern uint16_t PLL_Locked;

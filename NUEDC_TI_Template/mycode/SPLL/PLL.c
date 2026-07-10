@@ -34,7 +34,7 @@ const float iirPLLDen[2] = {-1.997778559f, 0.997781024f};
 // -------------------------------------------------------------------------
 void PLL_Init(void)
 {
-    // 初始化 PID: Kp=8, Ki=40, Ts=1/20000, OutMin, OutMax, IntMax
+    // 初始化 PID: Kp=8, Ki=40, Ts=1/PLL_SAMPLING_FREQ, OutMin, OutMax, IntMax
     PID_Init(&pid_PLL, 8.0f, 40.0f, 1.0f / PLL_SAMPLING_FREQ, -10.0f * PI, 10.0f * PI, 10.0f * PI);
     pid_PLL.ref = 0.0f;
 
@@ -46,7 +46,7 @@ void PLL_Init(void)
 }
 
 /**
- * @brief 20kHz(默认)软件锁相环计算。
+ * @brief PLL_SAMPLING_FREQ 软件锁相环计算。
  * @param input 输入电压瞬时值。
  * @note 输出到全局变量theta、w、PLL_Locked；约650 CPU clks @100MHz。
  */
@@ -110,15 +110,15 @@ RAMFUNC void PLL_Calc(float input)
     // 5. 锁相判断逻辑
     if (phaseError < 0.1f && phaseError > -0.1f)
     {
-        if (lockHold < 20000)
+        if (lockHold < PLL_LOCK_HOLD_LIMIT)
             lockHold++;
     }
     else if (lockHold > 0)
         lockHold--;
 
-    if (!PLL_Locked && lockHold > 19800)
+    if (!PLL_Locked && lockHold > PLL_LOCK_HOLD_ON_THRESHOLD)
         PLL_Locked = 1;
-    else if (PLL_Locked && lockHold < 15000)
+    else if (PLL_Locked && lockHold < PLL_LOCK_HOLD_OFF_THRESHOLD)
     {
         PLL_Locked = 0;
         lockHold = 0;
@@ -139,7 +139,7 @@ void PLL_Init_myself(void)
 }
 
 /**
- * @brief 20kHz软件锁相环备用计算通道。
+ * @brief PLL_SAMPLING_FREQ 软件锁相环备用计算通道。
  * @param input 输入电压瞬时值。
  * @note 输出到全局变量theta_myself、w_myself、PLL_Locked_myself。
  */
@@ -194,15 +194,15 @@ RAMFUNC void PLL_Calc_myself(float input)
 
     if (phaseError < 0.1f && phaseError > -0.1f)
     {
-        if (lockHold_myself < 20000)
+        if (lockHold_myself < PLL_LOCK_HOLD_LIMIT)
             lockHold_myself++;
     }
     else if (lockHold_myself > 0)
         lockHold_myself--;
 
-    if (!PLL_Locked_myself && lockHold_myself > 19800)
+    if (!PLL_Locked_myself && lockHold_myself > PLL_LOCK_HOLD_ON_THRESHOLD)
         PLL_Locked_myself = 1;
-    else if (PLL_Locked_myself && lockHold_myself < 15000)
+    else if (PLL_Locked_myself && lockHold_myself < PLL_LOCK_HOLD_OFF_THRESHOLD)
     {
         PLL_Locked_myself = 0;
         lockHold_myself = 0;

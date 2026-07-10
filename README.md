@@ -35,7 +35,7 @@ TI库参考文档/                       DCL 相关参考文档
 
 当前模板采用“EPWM 触发 ADC，ADC 中断执行实时控制”的结构：
 
-1. EPWM 上下计数，`TBPRD = 2500`，默认对应 20 kHz PWM。
+1. EPWM 上下计数，`TBPRD = 1000`，默认对应 50 kHz PWM。
 2. EPWM 在计数最低点触发 ADC SOC。
 3. ADC 完成配置的 SOC 转换后触发 `ADCA1` 中断。
 4. `ADC_SamplingISR()` 作为主控中断，放置所有 time critical 控制代码。

@@ -51,3 +51,8 @@
 */CPU1_RAM/*
 */Debug/*
 */Release/*
+
+.codex/*
+AGENTS.md
+**/.clangd
+.theia/launch.json

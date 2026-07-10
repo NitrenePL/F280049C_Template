@@ -1,16 +1,12 @@
 # F280049C_Template
 
-这是一个面向 TI C2000 DSP F280049C 的 CCS 20 模板工程，适合作为电力电子控制、三相调制、数字电源实验和 NUEDC 类项目的起始工程。
-
 ## 开发环境
 
-- CCS 20
+- CCS 21.0
 - TI C2000Ware 26.01.00.00
-- SysConfig 1.27.0+
-- TI C2000 code generation tools `ti-cgt-c2000_22.6.3.LTS`
+- SysConfig 1.28.0+
+- TI C2000 code generation tools `ti-cgt-c2000_25.11.1.LTS`
 - 目标芯片：TMS320F280049C
-
-工程中 VS Code 配置主要用于代码阅读、IntelliSense 和调用 CCS 编译链；实际工程属性仍以 CCS 项目配置为准。
 
 ## 工程结构
 
@@ -50,7 +46,7 @@ TI库参考文档/                       DCL 相关参考文档
 
 `CPUTIMER0` 用作 1 ms 慢速任务节拍：
 
-- LED 心跳任务
+- LED 闪烁任务
 - OLED 刷新请求
 - 其他非实时任务调度
 
@@ -58,7 +54,7 @@ OLED 刷新采用标志位方式：Timer 中断只置位，实际 I2C 刷新在 
 
 ## DCL 与控制器
 
-模板建议使用 TI DCL 库组织控制器对象，并通过 SysConfig 统一生成对象定义。
+建议使用 TI DCL 库组织控制器对象，并通过 SysConfig 统一生成对象定义。
 
 常用对象和函数：
 
@@ -67,7 +63,7 @@ OLED 刷新采用标志位方式：Timer 中断只置位，实际 I2C 刷新在 
 - `DCL_runDF22_C1()` / `DCL_runDF22_C2()`
 - `DCL_runRefgen()`
 
-`QPR.h` 提供 PR/QPR 控制器到 `DCL_DF22` 的系数计算。后续若添加一阶滤波器、虚拟阻抗或对象模型，可参考同类系数计算文件映射到 `DCL_DF11`。
+`QPR.h` 提供 PR/QPR 控制器到 `DCL_DF22` 的系数计算。后续若添加一阶滤波器等模型，可参考同类系数计算文件映射到 `DCL_DF11`。
 
 三角函数建议使用 TI intrinsic，例如 `__sin()`、`__cos()`。项目已打开 TMU 支持，适合在实时控制中使用。
 
@@ -126,3 +122,7 @@ RAMFUNC void foo(void)
 ## 参考文档
 
 本仓库保留了部分 TI DCL 参考文档，位于 `TI库参考文档/`。更完整的外设说明请参考 F28004x Technical Reference Manual、C2000Ware driverlib 文档和 Digital Power SDK 示例。
+
+## 关于 Flash / RAM 烧录
+
+工程支持 `CPU1_FLASH` 和 `CPU1_RAM` 两种构建配置。`CPU1_FLASH` 用于生成可固化到 Flash 的程序，适合最终调试和脱机运行；`CPU1_RAM` 会通过调试器下载到 RAM 中运行，掉电后程序丢失，但下载速度更快，适合频繁修改代码时快速验证。

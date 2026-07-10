@@ -1,13 +1,13 @@
 #include "Control.h"
 #include "DCLF32.h"
 #include "KeyBoard.h"
+#include "LPF_COEFF.h"
 #include "OLED_Display.h"
 #include "PLL.h"
 #include "QPR.h"
 #include "RMS.h"
 #include "global.h"
 #include "myEpwm.h"
-
 
 // OLED屏幕刷新率, 当前15Hz
 #define OLED_REFRESH_RATE_HZ 15U
@@ -19,7 +19,7 @@ float32_t Uout, Iout;
 float32_t Duty = 0.05f;
 float32_t theta_ref = 0.f; // 参考相位
 float32_t Ua_pu, Ub_pu, Uc_pu;
-float32_t error, output;
+float32_t error, output, error2, output2;
 float32_t Uab_inst, Ucb_inst; // 线电压瞬时值
 
 #pragma SET_DATA_SECTION()
@@ -70,6 +70,8 @@ RAMFUNC __interrupt void ADC_SamplingISR(void)
 
     output = DCL_runDF22_C1(&QPR_Ctrl1, error); // 37 clks
 
+    output2 = DCL_runDF11_C1(&Zv_LPF1, error2);
+
     theta_ref = DCL_getRefgenPhaseA(&theta_REFGEN); // 24 clks
     Ua_pu = 0.7f * __cos(CONST_2PI_32 * theta_ref);
     Ub_pu = 0.7f * __cos(CONST_2PI_32 * theta_ref - CONST_2PI_32 / 3.f);
@@ -77,7 +79,7 @@ RAMFUNC __interrupt void ADC_SamplingISR(void)
 
     // PLL_Calc(Uab_inst); // 650 clks
 
-    Uan_rms = RMS_Calc(&Uan_RMS, Uab_inst); 
+    Uan_rms = RMS_Calc(&Uan_RMS, Uab_inst);
 
     CB_SVPWM_3Ph(Ua_pu, Ub_pu, Uc_pu); // 332 clks
 
@@ -94,15 +96,15 @@ void Setup(void)
     PWM_PRD = EPWM_getTimeBasePeriod(EPWM_A_BASE);
     EPWM_Stop();
 
+    // 控制器参数计算&初始化
     computeDF22_PRcontrollerCoeff(&QPR_Ctrl1, 3.f, 40.f, CONST_2PI_32 * 50.f, ISR_FREQ, CONST_2PI_32 * 2.f);
     computeDF22_PRcontrollerCoeff(&QPR_Ctrl2, 3.f, 40.f, CONST_2PI_32 * 50.f, ISR_FREQ, CONST_2PI_32 * 2.f);
     computeDF22_PRcontrollerCoeff(&QPR_Ctrl3, 3.f, 40.f, CONST_2PI_32 * 50.f, ISR_FREQ, CONST_2PI_32 * 2.f);
 
-    // 控制器初始化
+    computeDF11_LPFCoeff(&Zv_LPF1, 0.001f, 0.01f, ISR_FREQ);
+    computeDF11_LPFCoeff(&Zv_LPF2, 0.001f, 0.01f, ISR_FREQ);
+
     DCL_resetPI(&myPID_Uout);
-    DCL_resetDF22(&QPR_Ctrl1);
-    DCL_resetDF22(&QPR_Ctrl2);
-    DCL_resetDF22(&QPR_Ctrl3);
 
     // 锁相环初始化
     PLL_Init();

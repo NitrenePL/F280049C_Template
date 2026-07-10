@@ -35,6 +35,8 @@ const controller1 = controller.addInstance();
 const controller2 = controller.addInstance();
 const controller3 = controller.addInstance();
 const controller4 = controller.addInstance();
+const controller5 = controller.addInstance();
+const controller6 = controller.addInstance();
 const logger      = scripting.addModule("/libraries/control/dcl/logger.js", {}, false);
 const logger1     = logger.addInstance();
 const logger2     = logger.addInstance();
@@ -212,6 +214,12 @@ controller3.controllerChoice = "DF22";
 
 controller4.$name            = "QPR_Ctrl3";
 controller4.controllerChoice = "DF22";
+
+controller5.$name            = "Zv_LPF1";
+controller5.controllerChoice = "DF11";
+
+controller6.$name            = "Zv_LPF2";
+controller6.controllerChoice = "DF11";
 
 logger1.$name     = "myLOGGER0";
 logger1.linkerEn  = true;

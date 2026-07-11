@@ -15,28 +15,51 @@
 
 #pragma SET_DATA_SECTION("controlVariables")
 // 高速RAM变量放在这里, 例如电流环、滤波器等
-float32_t Uout, Iout;
-float32_t Duty = 0.05f;
-float32_t theta_ref = 0.f; // 参考相位
-float32_t Ua_pu, Ub_pu, Uc_pu;
+
+float32_t UF_inst, ILoad_inst, IF_inst; // 电网电压, 负载电流, APF电流
+
+float32_t Duty = 0.05f; // SPWM调制用占空比
+
 float32_t error, output, error2, output2;
-float32_t Uab_inst, Ucb_inst; // 线电压瞬时值
 
 #pragma SET_DATA_SECTION()
 
 #pragma SET_DATA_SECTION("logVariables")
 // 低速RAM变量放在这里, 例如RMS数组、状态数据等
-float32_t Set_Uout = 16.0f;
 
-uint16_t PWM_PRD = 0; // 假设默认周期值
-uint8_t Open = 0;     // 默认关闭
-uint8_t MODE = 0;     // 默认模式0
+uint16_t PWM_PRD = 0;
+uint8_t Open = 0; // 默认关闭
+uint8_t MODE = 0; // 默认模式0
 uint8_t LAST_MODE = 0;
 
 RMS_Obj Uan_RMS;
 float32_t Uan_rms;
 
 #pragma SET_DATA_SECTION()
+
+static inline RAMFUNC void MyProtect(void)
+{
+}
+
+static inline RAMFUNC void ADC_DataProcess(void)
+{
+    float32_t UF_inst_H, UF_inst_L, ILoad_inst_H, ILoad_inst_L, IF_inst_H, IF_inst_L;
+
+    UF_inst_H = (float32_t)ADC_readResult(ADCARESULT_BASE, ADC_SOC_NUMBER0); // 40 clks
+    UF_inst_L = (float32_t)ADC_readResult(ADCARESULT_BASE, ADC_SOC_NUMBER1);
+
+    ILoad_inst_H = (float32_t)ADC_readResult(ADCARESULT_BASE, ADC_SOC_NUMBER2);
+    ILoad_inst_L = (float32_t)ADC_readResult(ADCARESULT_BASE, ADC_SOC_NUMBER3);
+
+    IF_inst_H = (float32_t)ADC_readResult(ADCARESULT_BASE, ADC_SOC_NUMBER4);
+    IF_inst_L = (float32_t)ADC_readResult(ADCARESULT_BASE, ADC_SOC_NUMBER5);
+
+    UF_inst = UF_inst_H - UF_inst_L;
+    ILoad_inst = ILoad_inst_H - ILoad_inst_L;
+    IF_inst = IF_inst_H - IF_inst_L;
+
+    MyProtect();
+}
 
 // Timer0 中断服务函数 慢速任务 1kHz
 __interrupt void INT_myCPUTIMER0_ISR(void)
@@ -64,24 +87,24 @@ __interrupt void INT_myCPUTIMER0_ISR(void)
 // ADC_INT 中断服务函数 主控中断 50kHz
 RAMFUNC __interrupt void ADC_SamplingISR(void)
 {
-    Uab_inst = 3.3f / 4096.f * ADC_readResult(ADCARESULT_BASE, ADC_SOC_NUMBER0); // 40 clks
+    ADC_DataProcess();
 
     DCL_runRefgen(&theta_REFGEN); // 360 clks
 
-    output = DCL_runDF22_C1(&QPR_Ctrl1, error); // 37 clks
+    // output = DCL_runDF22_C1(&QPR_Ctrl1, error); // 37 clks
 
-    output2 = DCL_runDF11_C1(&Zv_LPF1, error2);
+    // output2 = DCL_runDF11_C1(&Zv_LPF1, error2);
 
-    theta_ref = DCL_getRefgenPhaseA(&theta_REFGEN); // 24 clks
-    Ua_pu = 0.7f * __cos(CONST_2PI_32 * theta_ref);
-    Ub_pu = 0.7f * __cos(CONST_2PI_32 * theta_ref - CONST_2PI_32 / 3.f);
-    Uc_pu = 0.7f * __cos(CONST_2PI_32 * theta_ref + CONST_2PI_32 / 3.f);
+    // theta_ref = DCL_getRefgenPhaseA(&theta_REFGEN); // 24 clks
+    // Ua_pu = 0.7f * __cos(CONST_2PI_32 * theta_ref);
+    // Ub_pu = 0.7f * __cos(CONST_2PI_32 * theta_ref - CONST_2PI_32 / 3.f);
+    // Uc_pu = 0.7f * __cos(CONST_2PI_32 * theta_ref + CONST_2PI_32 / 3.f);
 
     // PLL_Calc(Uab_inst); // 650 clks
 
-    Uan_rms = RMS_Calc(&Uan_RMS, Uab_inst);
+    // Uan_rms = RMS_Calc(&Uan_RMS, Uab_inst);
 
-    CB_SVPWM_3Ph(Ua_pu, Ub_pu, Uc_pu); // 332 clks
+    // CB_SVPWM_3Ph(Ua_pu, Ub_pu, Uc_pu); // 332 clks
 
     ADC_clearInterruptStatus(ADCA_BASE, ADC_INT_NUMBER1);
     Interrupt_clearACKGroup(INTERRUPT_ACK_GROUP1);
@@ -118,8 +141,4 @@ void Setup(void)
     Interrupt_enable(INT_ADCA1); // 使能主控中断
 
     OLED_Display_Init();
-}
-
-void MyProtect(void)
-{
 }

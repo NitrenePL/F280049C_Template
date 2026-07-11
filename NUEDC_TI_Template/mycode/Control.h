@@ -8,7 +8,6 @@ extern "C"
 
 void Setup(void);
 void Loop(void);
-void MyProtect(void);
 
 #ifdef __cplusplus
 }

@@ -88,13 +88,13 @@ static void OLED_Display_UpdatePage0(void)
     OLED_Display_FormatFixed2(oledLine[3], "Duty", Duty);
     OLED_Display_UpdateLine(3U, oledLine[3]);
 
-    OLED_Display_FormatFixed2(oledLine[4], "Ua", 4);
+    OLED_Display_FormatFixed2(oledLine[4], "1st", FFT_HarmonicAmp[1]);
     OLED_Display_UpdateLine(4U, oledLine[4]);
 
-    OLED_Display_FormatFixed2(oledLine[5], "Ub", 5);
+    OLED_Display_FormatFixed2(oledLine[5], "3rd", FFT_HarmonicAmp[3]);
     OLED_Display_UpdateLine(5U, oledLine[5]);
 
-    OLED_Display_FormatFixed2(oledLine[6], "Uc", 6);
+    OLED_Display_FormatFixed2(oledLine[6], "5th", FFT_HarmonicAmp[5]);
     OLED_Display_UpdateLine(6U, oledLine[6]);
 }
 

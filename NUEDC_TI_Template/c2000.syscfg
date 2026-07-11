@@ -255,7 +255,7 @@ controller6.controllerChoice = "DF11";
 logger1.$name     = "myLOGGER0";
 logger1.linkerEn  = true;
 logger1.linkerVal = "logVariables";
-logger1.logSize   = 400;
+logger1.logSize   = 1000;
 
 logger2.$name     = "myLOGGER1";
 logger2.linkerEn  = true;
@@ -269,10 +269,10 @@ logger3.logSize   = 400;
 
 refgen1.$name   = "theta_REFGEN";
 refgen1.mode    = "SAW";
-refgen1.sampPer = 0.00005;
 refgen1.freq    = 50;
 refgen1.umax    = 1;
 refgen1.offs    = 0;
+refgen1.sampPer = 0.00002;
 
 FFT1.$name             = "myFFT0";
 FFT1.windEnable        = true;

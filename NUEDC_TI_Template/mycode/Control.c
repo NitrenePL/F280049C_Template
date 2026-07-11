@@ -14,6 +14,11 @@
 #define SLOW_TASK_RATE_HZ    1000U
 #define APF_RFFT_SIZE        1024U
 #define APF_FFT_DECIMATION   10U
+#define APF_FFT_SAMPLE_RATE  (ISR_FREQ / (float32_t)APF_FFT_DECIMATION)
+#define APF_FFT_BASE_FREQ    50.0f
+#define APF_FFT_MAX_HARMONIC 19U
+#define APF_FFT_HAMMING_GAIN 0.54f
+#define APF_FFT_AMP_SCALE    (2.0f / ((float32_t)APF_RFFT_SIZE * APF_FFT_HAMMING_GAIN))
 
 #pragma SET_DATA_SECTION("controlVariables")
 // 高速RAM变量放在这里, 例如电流环、滤波器等
@@ -21,6 +26,8 @@
 float32_t UF_inst, ILoad_inst, IF_inst; // 电网电压, 负载电流, APF电流
 
 float32_t Duty = 0.05f; // SPWM调制用占空比
+
+float32_t theta_ref;
 
 float32_t error, output, error2, output2;
 
@@ -40,6 +47,7 @@ float32_t Uan_rms;
 static float32_t FFT_Input_Data[APF_RFFT_SIZE];
 static float32_t FFT_Output_Data[APF_RFFT_SIZE];
 static float32_t FFT_Mag_Data[APF_RFFT_SIZE / 2U];
+float32_t FFT_HarmonicAmp[APF_FFT_MAX_HARMONIC + 1U];
 static float32_t FFT_Phase_Data[APF_RFFT_SIZE / 2U];
 static const float32_t FFT_Window_Data[APF_RFFT_SIZE / 2U] = HAMMING1024;
 
@@ -78,7 +86,6 @@ static inline RAMFUNC void ADC_DataProcess(void)
     MyProtect();
 }
 
-// Timer0 中断服务函数 慢速任务 1kHz
 static inline RAMFUNC void FFT_SamplingTask(void)
 {
     if (++FFT_DecimationCnt < APF_FFT_DECIMATION)
@@ -101,6 +108,9 @@ static inline RAMFUNC void FFT_SamplingTask(void)
 
 static inline void FFT_ProcessTask(void)
 {
+    uint16_t h, k, startBin, endBin, bin;
+    float32_t binFloat, magMax;
+
     if (FFT_ReadyFlag == 0U)
     {
         return;
@@ -110,9 +120,35 @@ static inline void FFT_ProcessTask(void)
     RFFT_f32u(myRFFT0_handle);
     RFFT_f32_mag_TMU0(myRFFT0_handle);
 
+    FFT_HarmonicAmp[0U] = 0.0f;
+    for (h = 1U; h <= APF_FFT_MAX_HARMONIC; h++)
+    {
+        binFloat = ((float32_t)h * APF_FFT_BASE_FREQ * (float32_t)APF_RFFT_SIZE) / APF_FFT_SAMPLE_RATE;
+        bin = (uint16_t)(binFloat + 0.5f);
+
+        startBin = (bin > 0U) ? (uint16_t)(bin - 1U) : 0U;
+        endBin = (uint16_t)(bin + 1U);
+        if (endBin >= (APF_RFFT_SIZE / 2U))
+        {
+            endBin = (uint16_t)((APF_RFFT_SIZE / 2U) - 1U);
+        }
+
+        magMax = 0.0f;
+        for (k = startBin; k <= endBin; k++)
+        {
+            if (FFT_Mag_Buf[k] > magMax)
+            {
+                magMax = FFT_Mag_Buf[k];
+            }
+        }
+
+        FFT_HarmonicAmp[h] = magMax * APF_FFT_AMP_SCALE;
+    }
+
     FFT_ReadyFlag = 0U;
 }
 
+// Timer0 中断服务函数 慢速任务 1kHz
 __interrupt void INT_myCPUTIMER0_ISR(void)
 {
     static uint16_t ledTaskCnt = 0;
@@ -139,15 +175,21 @@ __interrupt void INT_myCPUTIMER0_ISR(void)
 RAMFUNC __interrupt void ADC_SamplingISR(void)
 {
     ADC_DataProcess();
-    FFT_SamplingTask();
 
-    DCL_runRefgen(&theta_REFGEN); // 360 clks
+    DCL_runRefgen(&theta_REFGEN);                   // 360 clks
+    theta_ref = DCL_getRefgenPhaseA(&theta_REFGEN); // 24 clks
+
+    UF_inst = 20.f * __cos(CONST_2PI_32 * theta_ref) + 3.f * __cos(3.f * CONST_2PI_32 * theta_ref - CONST_PI_32 / 6.f);
+    UF_inst += 2.f * __cos(5.f * CONST_2PI_32 * theta_ref - CONST_PI_32 / 6.f);
+
+    DCL_fwriteLog(&myLOGGER0, UF_inst);
+
+    FFT_SamplingTask();
 
     // output = DCL_runDF22_C1(&QPR_Ctrl1, error); // 37 clks
 
     // output2 = DCL_runDF11_C1(&Zv_LPF1, error2);
 
-    // theta_ref = DCL_getRefgenPhaseA(&theta_REFGEN); // 24 clks
     // Ua_pu = 0.7f * __cos(CONST_2PI_32 * theta_ref);
     // Ub_pu = 0.7f * __cos(CONST_2PI_32 * theta_ref - CONST_2PI_32 / 3.f);
     // Uc_pu = 0.7f * __cos(CONST_2PI_32 * theta_ref + CONST_2PI_32 / 3.f);

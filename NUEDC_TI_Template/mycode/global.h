@@ -5,15 +5,13 @@
 
 #define RAMFUNC __attribute__((section(".TI.ramfunc")))
 
-#define LED5_GPIO 23U
+#define LED5_GPIO    23U
 #define LED_TOGGLE() GPIO_togglePin(LED5_GPIO)
 
+#include "c2000ware_libraries.h"
 #include "device.h"
 #include "driverlib.h"
 #include <stdint.h>
-#include "c2000ware_libraries.h"
-
-
 
 #ifdef __cplusplus
 extern "C"
@@ -28,13 +26,14 @@ extern "C"
     extern float32_t UF_inst;
     extern float32_t ILoad_inst;
     extern float32_t IF_inst;
+
+    extern float32_t FFT_HarmonicAmp[20];
     // extern float32_t Ua_pu;
     // extern float32_t Ub_pu;
     // extern float32_t Uc_pu;
     // extern float32_t error;
     // extern float32_t output;
 
-    
 #ifdef __cplusplus
 }
 #endif

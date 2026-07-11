@@ -56,14 +56,14 @@ SECTIONS
 #endif
 
    .text            : >> RAMLS_CODE | RAMGS_CODE, PAGE = 0, ALIGN(4)
-   .cinit           : > RAMM0,     PAGE = 0, ALIGN(4)
-   .switch          : > RAMM0,     PAGE = 0, ALIGN(4)
+   .cinit           : > RAMGS_CODE, PAGE = 0, ALIGN(4)
+   .switch          : > RAMGS_CODE, PAGE = 0, ALIGN(4)
    .reset           : > RESET,     PAGE = 0, TYPE = DSECT /* not used, */
 
    .stack           : > RAMM1,     PAGE = 1
 
 #if defined(__TI_EABI__)
-   .init_array      : > RAMM0,        PAGE = 0, ALIGN(4)
+   .init_array      : > RAMGS_CODE,   PAGE = 0, ALIGN(4)
    .bss             : > RAMLS_DATA,   PAGE = 1
    .bss:output      : > RAMLS_DATA,   PAGE = 1
    .bss:cio         : > RAMLS_DATA,   PAGE = 1
@@ -71,12 +71,18 @@ SECTIONS
    .sysmem          : > RAMLS_DATA,   PAGE = 1
    .const           : > RAMLS_DATA,   PAGE = 1
 #else
-   .pinit           : > RAMM0,        PAGE = 0, ALIGN(4)
+   .pinit           : > RAMGS_CODE,   PAGE = 0, ALIGN(4)
    .ebss            : > RAMLS_DATA,   PAGE = 1
    .esysmem         : > RAMLS_DATA,   PAGE = 1
    .cio             : > RAMLS_DATA,   PAGE = 1
    .econst          : > RAMLS_DATA,   PAGE = 1
 #endif
+
+   FPUfftTables    : > RAMGS_DATA,
+                     RUN_START(FPUfftTablesRunStart),
+                     LOAD_START(FPUfftTablesLoadStart),
+                     LOAD_SIZE(FPUfftTablesLoadSize),
+                     ALIGN(4)
 
    ramgs0           : > RAMGS_DATA, PAGE = 1
    ramgs1           : > RAMGS_DATA, PAGE = 1

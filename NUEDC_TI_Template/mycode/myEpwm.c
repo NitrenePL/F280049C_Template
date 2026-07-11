@@ -8,8 +8,6 @@ void EPWM_Start(void)
     EPWM_clearTripZoneFlag(EPWMA_BASE, EPWM_TZ_FLAG_OST);
     EPWM_clearTripZoneFlag(EPWMB_BASE, EPWM_TZ_FLAG_OST);
     EPWM_clearTripZoneFlag(EPWMC_BASE, EPWM_TZ_FLAG_OST);
-
-
 }
 
 void EPWM_Stop(void)
@@ -26,8 +24,6 @@ void SPWM(float D)
     else if (D <= -0.99f)
         D = -0.99f;
 
-    // EPWM_OUTPUTA_duty(0.5f + 0.5f * D);
-    // EPWM_OUTPUTB_duty(0.5f - 0.5f * D);
     EPWM_setCounterCompareValue(EPWMA_BASE, EPWM_COUNTER_COMPARE_A, (uint16_t)((0.5f + 0.5f * D) * PWM_PRD));
     EPWM_setCounterCompareValue(EPWMB_BASE, EPWM_COUNTER_COMPARE_A, (uint16_t)((0.5f - 0.5f * D) * PWM_PRD));
 }
@@ -57,9 +53,9 @@ void SPWM(float D)
 //!                 在线性调制区内，该方法与传统七段式 SVPWM 等效，但不需要
 //!                 扇区判断和矢量作用时间计算。
 //!
-//! \param[in]      Ua_pu  A 相归一化正弦参考量，范围 [-1, 1]
-//! \param[in]      Ub_pu  B 相归一化正弦参考量，范围 [-1, 1]
-//! \param[in]      Uc_pu  C 相归一化正弦参考量，范围 [-1, 1]
+//! \param[in]      Ua_pu  A 相归一化正弦参考量，范围 [-1.1547, 1.1547]
+//! \param[in]      Ub_pu  B 相归一化正弦参考量，范围 [-1.1547, 1.1547]
+//! \param[in]      Uc_pu  C 相归一化正弦参考量，范围 [-1.1547, 1.1547]
 //!
 //! \return         None
 //!
@@ -70,10 +66,9 @@ RAMFUNC void CB_SVPWM_3Ph(float Ua_pu, float Ub_pu, float Uc_pu)
     float Da, Db, Dc;
 
     // 输入限幅，防止外部控制器输出异常
-    DCL_runClamp_C1(&Ua_pu, 1.f, -1.f);
-    DCL_runClamp_C1(&Ub_pu, 1.f, -1.f);
-    DCL_runClamp_C1(&Uc_pu, 1.f, -1.f);
-
+    DCL_runClamp_C1(&Ua_pu, 1.1547f, -1.1547f);
+    DCL_runClamp_C1(&Ub_pu, 1.1547f, -1.1547f);
+    DCL_runClamp_C1(&Uc_pu, 1.1547f, -1.1547f);
 
     Umax = __fmax(Ua_pu, __fmax(Ub_pu, Uc_pu));
     Umin = __fmin(Ua_pu, __fmin(Ub_pu, Uc_pu));

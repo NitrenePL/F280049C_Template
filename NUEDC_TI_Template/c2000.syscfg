@@ -44,6 +44,8 @@ const logger2     = logger.addInstance();
 const logger3     = logger.addInstance();
 const refgen      = scripting.addModule("/libraries/control/dcl/refgen.js", {}, false);
 const refgen1     = refgen.addInstance();
+const FFT         = scripting.addModule("/libraries/dsp/FPU/FFT/FFT.js", {}, false);
+const FFT1        = FFT.addInstance();
 const FPUfastRTS  = scripting.addModule("/libraries/math/FPUfastRTS/FPUfastRTS.js", {}, false);
 const FPUfastRTS1 = FPUfastRTS.addInstance();
 
@@ -271,6 +273,17 @@ refgen1.sampPer = 0.00005;
 refgen1.freq    = 50;
 refgen1.umax    = 1;
 refgen1.offs    = 0;
+
+FFT1.$name             = "myFFT0";
+FFT1.windEnable        = true;
+FFT1.WIN_8             = true;
+FFT1.RFFT.create(1);
+FFT1.RFFT[0].$name     = "myRFFT0";
+FFT1.RFFT[0].inPtr     = "FFT_Input_Buf";
+FFT1.RFFT[0].outPtr    = "FFT_Output_Buf";
+FFT1.RFFT[0].magPtr    = "FFT_Mag_Buf";
+FFT1.RFFT[0].phasPtr   = "FFT_Phase_Buf";
+FFT1.RFFT[0].numStages = 10;
 
 FPUfastRTS1.$name = "myFFR0";
 

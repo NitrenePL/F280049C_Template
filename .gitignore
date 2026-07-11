@@ -56,4 +56,4 @@
 AGENTS.md
 **/.clangd
 .theia/launch.json
-**/.settings/
+./.settings/*

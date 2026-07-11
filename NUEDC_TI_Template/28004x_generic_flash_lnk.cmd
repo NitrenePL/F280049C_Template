@@ -90,6 +90,13 @@ SECTIONS
 
 #endif
 
+   FPUfftTables    : LOAD = FLASH_APP,
+                     RUN = RAMGS_DATA,
+                     RUN_START(FPUfftTablesRunStart),
+                     LOAD_START(FPUfftTablesLoadStart),
+                     LOAD_SIZE(FPUfftTablesLoadSize),
+                     ALIGN(4)
+
    controlVariables : > RAMLS_DATA, PAGE = 1
    logVariables     : > RAMGS_DATA, PAGE = 1
 

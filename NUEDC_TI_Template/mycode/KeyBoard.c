@@ -13,10 +13,8 @@ void KeyAction(uint16_t key)
             MODE = 1;
             break;
         case 3:
-            Set_Uout += 0.2f;
             break;
         case 4:
-            Set_Uout -= 0.2f;
             break;
         case 5:
             break;

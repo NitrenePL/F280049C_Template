@@ -1,5 +1,6 @@
 #include "OLED_Display.h"
 
+#include "FFT_APP.h"
 #include "global.h"
 #include "oled.h"
 #include <stdio.h>
@@ -82,35 +83,35 @@ static void OLED_Display_UpdatePage0(void)
     sprintf(oledLine[1], "MODE:%-10u", MODE);
     OLED_Display_UpdateLine(1U, oledLine[1]);
 
-    OLED_Display_FormatFixed2(oledLine[2], "Uout", Uout);
+    OLED_Display_FormatFixed2(oledLine[2], "Uout", 2);
     OLED_Display_UpdateLine(2U, oledLine[2]);
 
     OLED_Display_FormatFixed2(oledLine[3], "Duty", Duty);
     OLED_Display_UpdateLine(3U, oledLine[3]);
 
-    OLED_Display_FormatFixed2(oledLine[4], "Ua", Ua_pu);
+    OLED_Display_FormatFixed2(oledLine[4], "1st", FFT_HarmonicAmp[1]);
     OLED_Display_UpdateLine(4U, oledLine[4]);
 
-    OLED_Display_FormatFixed2(oledLine[5], "Ub", Ub_pu);
+    OLED_Display_FormatFixed2(oledLine[5], "3rd", FFT_HarmonicAmp[3]);
     OLED_Display_UpdateLine(5U, oledLine[5]);
 
-    OLED_Display_FormatFixed2(oledLine[6], "Uc", Uc_pu);
+    OLED_Display_FormatFixed2(oledLine[6], "5th", FFT_HarmonicAmp[5]);
     OLED_Display_UpdateLine(6U, oledLine[6]);
 }
 
 // 第 2 页：控制器与调试变量，后续调试量可优先添加在这里
 static void OLED_Display_UpdatePage1(void)
 {
-    OLED_Display_FormatFixed2(oledLine[1], "SetU", Set_Uout);
+    OLED_Display_FormatFixed2(oledLine[1], "SetU", 1);
     OLED_Display_UpdateLine(1U, oledLine[1]);
 
-    OLED_Display_FormatFixed2(oledLine[2], "Err", error);
+    OLED_Display_FormatFixed2(oledLine[2], "Err", 2);
     OLED_Display_UpdateLine(2U, oledLine[2]);
 
-    OLED_Display_FormatFixed2(oledLine[3], "Out", output);
+    OLED_Display_FormatFixed2(oledLine[3], "Out", 3);
     OLED_Display_UpdateLine(3U, oledLine[3]);
 
-    OLED_Display_FormatFixed2(oledLine[4], "Theta", theta_ref);
+    OLED_Display_FormatFixed2(oledLine[4], "Theta", 4);
     OLED_Display_UpdateLine(4U, oledLine[4]);
 
     sprintf(oledLine[5], "Open:%-10u", Open);

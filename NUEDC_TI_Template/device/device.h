@@ -346,6 +346,9 @@ extern uint16_t RamfuncsLoadSize;
 extern uint16_t RamfuncsRunStart;
 extern uint16_t RamfuncsRunEnd;
 extern uint16_t RamfuncsRunSize;
+extern uint16_t FPUfftTablesLoadStart;
+extern uint16_t FPUfftTablesLoadSize;
+extern uint16_t FPUfftTablesRunStart;
 #endif
 
 #endif

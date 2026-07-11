@@ -1,5 +1,6 @@
 #include "Control.h"
 #include "DCLF32.h"
+#include "FFT_APP.h"
 #include "KeyBoard.h"
 #include "LPF_COEFF.h"
 #include "OLED_Display.h"
@@ -12,13 +13,6 @@
 // OLED屏幕刷新率, 当前15Hz
 #define OLED_REFRESH_RATE_HZ 15U
 #define SLOW_TASK_RATE_HZ    1000U
-#define APF_RFFT_SIZE        1024U
-#define APF_FFT_DECIMATION   10U
-#define APF_FFT_SAMPLE_RATE  (ISR_FREQ / (float32_t)APF_FFT_DECIMATION)
-#define APF_FFT_BASE_FREQ    50.0f
-#define APF_FFT_MAX_HARMONIC 19U
-#define APF_FFT_HAMMING_GAIN 0.54f
-#define APF_FFT_AMP_SCALE    (2.0f / ((float32_t)APF_RFFT_SIZE * APF_FFT_HAMMING_GAIN))
 
 #pragma SET_DATA_SECTION("controlVariables")
 // 高速RAM变量放在这里, 例如电流环、滤波器等
@@ -44,22 +38,6 @@ uint8_t LAST_MODE = 0;
 RMS_Obj Uan_RMS;
 float32_t Uan_rms;
 
-static float32_t FFT_Input_Data[APF_RFFT_SIZE];
-static float32_t FFT_Output_Data[APF_RFFT_SIZE];
-static float32_t FFT_Mag_Data[APF_RFFT_SIZE / 2U];
-float32_t FFT_HarmonicAmp[APF_FFT_MAX_HARMONIC + 1U];
-static float32_t FFT_Phase_Data[APF_RFFT_SIZE / 2U];
-static const float32_t FFT_Window_Data[APF_RFFT_SIZE / 2U] = HAMMING1024;
-
-static volatile uint16_t FFT_WriteIndex = 0U;
-static volatile uint16_t FFT_DecimationCnt = 0U;
-static volatile uint16_t FFT_ReadyFlag = 0U;
-
-float32_t *FFT_Input_Buf = FFT_Input_Data;
-float32_t *FFT_Output_Buf = FFT_Output_Data;
-float32_t *FFT_Mag_Buf = FFT_Mag_Data;
-float32_t *FFT_Phase_Buf = FFT_Phase_Data;
-
 #pragma SET_DATA_SECTION()
 
 static inline RAMFUNC void MyProtect(void)
@@ -84,68 +62,6 @@ static inline RAMFUNC void ADC_DataProcess(void)
     IF_inst = IF_inst_H - IF_inst_L;
 
     MyProtect();
-}
-
-static inline RAMFUNC void FFT_SamplingTask(void)
-{
-    if (++FFT_DecimationCnt < APF_FFT_DECIMATION)
-    {
-        return;
-    }
-
-    FFT_DecimationCnt = 0U;
-
-    if (FFT_ReadyFlag == 0U)
-    {
-        FFT_Input_Buf[FFT_WriteIndex++] = UF_inst;
-        if (FFT_WriteIndex >= APF_RFFT_SIZE)
-        {
-            FFT_WriteIndex = 0U;
-            FFT_ReadyFlag = 1U;
-        }
-    }
-}
-
-static inline void FFT_ProcessTask(void)
-{
-    uint16_t h, k, startBin, endBin, bin;
-    float32_t binFloat, magMax;
-
-    if (FFT_ReadyFlag == 0U)
-    {
-        return;
-    }
-
-    RFFT_f32_win(FFT_Input_Buf, FFT_Window_Data, APF_RFFT_SIZE);
-    RFFT_f32u(myRFFT0_handle);
-    RFFT_f32_mag_TMU0(myRFFT0_handle);
-
-    FFT_HarmonicAmp[0U] = 0.0f;
-    for (h = 1U; h <= APF_FFT_MAX_HARMONIC; h++)
-    {
-        binFloat = ((float32_t)h * APF_FFT_BASE_FREQ * (float32_t)APF_RFFT_SIZE) / APF_FFT_SAMPLE_RATE;
-        bin = (uint16_t)(binFloat + 0.5f);
-
-        startBin = (bin > 0U) ? (uint16_t)(bin - 1U) : 0U;
-        endBin = (uint16_t)(bin + 1U);
-        if (endBin >= (APF_RFFT_SIZE / 2U))
-        {
-            endBin = (uint16_t)((APF_RFFT_SIZE / 2U) - 1U);
-        }
-
-        magMax = 0.0f;
-        for (k = startBin; k <= endBin; k++)
-        {
-            if (FFT_Mag_Buf[k] > magMax)
-            {
-                magMax = FFT_Mag_Buf[k];
-            }
-        }
-
-        FFT_HarmonicAmp[h] = magMax * APF_FFT_AMP_SCALE;
-    }
-
-    FFT_ReadyFlag = 0U;
 }
 
 // Timer0 中断服务函数 慢速任务 1kHz
@@ -184,7 +100,7 @@ RAMFUNC __interrupt void ADC_SamplingISR(void)
 
     DCL_fwriteLog(&myLOGGER0, UF_inst);
 
-    FFT_SamplingTask();
+    FFT_APP_SamplingTask(UF_inst);
 
     // output = DCL_runDF22_C1(&QPR_Ctrl1, error); // 37 clks
 
@@ -206,7 +122,7 @@ RAMFUNC __interrupt void ADC_SamplingISR(void)
 
 void Loop(void)
 {
-    FFT_ProcessTask();
+    FFT_APP_ProcessTask();
     OLED_Display_Task(); // 10ms刷新周期 由CPUTIMER0调度
 }
 void Setup(void)

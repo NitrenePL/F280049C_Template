@@ -1,5 +1,6 @@
 #include "OLED_Display.h"
 
+#include "FFT_APP.h"
 #include "global.h"
 #include "oled.h"
 #include <stdio.h>

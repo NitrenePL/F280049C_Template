@@ -27,7 +27,6 @@ extern "C"
     extern float32_t ILoad_inst;
     extern float32_t IF_inst;
 
-    extern float32_t FFT_HarmonicAmp[20];
     // extern float32_t Ua_pu;
     // extern float32_t Ub_pu;
     // extern float32_t Uc_pu;

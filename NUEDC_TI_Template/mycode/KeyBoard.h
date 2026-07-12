@@ -17,6 +17,8 @@ void Keyboard_Init(void);
 void KEYBOARD_TIMER_Init(void);
 uint16_t Keyboard_ReadData(void);
 void KeyBoard_Scan(void);
+void KeyBoard_RequestScan(void);
+void KeyBoard_Task(void);
 void KeyAction(uint16_t key);
 
 // Timer1 中断服务函数

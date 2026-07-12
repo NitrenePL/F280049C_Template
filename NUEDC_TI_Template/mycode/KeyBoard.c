@@ -1,5 +1,7 @@
 #include "KeyBoard.h"
 
+static volatile uint16_t KeyboardScanFlag = 0U;
+
 void KeyAction(uint16_t key)
 {
     switch (key)
@@ -100,13 +102,13 @@ uint16_t Keyboard_ReadData(void)
     uint16_t data = 0;
 
     GPIO_writePin(KEYBOARD_LD_GPIO, 1);
-    DEVICE_DELAY_US(1000); // 1ms 延时
+    DEVICE_DELAY_US(10); // 10us延时
 
     GPIO_writePin(KEYBOARD_LD_GPIO, 0);
 
     for (i = 0; i < 16; i++)
     {
-        DEVICE_DELAY_US(1000);
+        DEVICE_DELAY_US(10);
 
         if (GPIO_readPin(KEYBOARD_DA_GPIO))
         {
@@ -114,7 +116,7 @@ uint16_t Keyboard_ReadData(void)
         }
 
         GPIO_writePin(KEYBOARD_CK_GPIO, 1);
-        DEVICE_DELAY_US(1000);
+        DEVICE_DELAY_US(10);
 
         GPIO_writePin(KEYBOARD_CK_GPIO, 0);
     }
@@ -138,10 +140,26 @@ void KeyBoard_Scan(void)
     IRQStateBkp = IRQState;
 }
 
+void KeyBoard_RequestScan(void)
+{
+    KeyboardScanFlag = 1U;
+}
+
+void KeyBoard_Task(void)
+{
+    if (KeyboardScanFlag == 0U)
+    {
+        return;
+    }
+
+    KeyboardScanFlag = 0U;
+    KeyBoard_Scan();
+}
+
 // Timer 1 中断服务程序
 __interrupt void cpuTimer1ISR(void)
 {
-    KeyBoard_Scan();
+    KeyBoard_RequestScan();
     CPUTimer_clearOverflowFlag(CPUTIMER1_BASE);
 
     // Timer 1 和 Timer 2 是直接连接到 CPU 的核心中断 (INT13/INT14)

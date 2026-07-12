@@ -12,6 +12,7 @@
 // OLED屏幕刷新率, 当前15Hz
 #define OLED_REFRESH_RATE_HZ 15U
 #define SLOW_TASK_RATE_HZ    1000U
+#define KEYBOARD_POLL_MS     50U
 
 #pragma SET_DATA_SECTION("controlVariables")
 // 高速RAM变量放在这里, 例如电流环、滤波器等
@@ -43,6 +44,7 @@ __interrupt void INT_myCPUTIMER0_ISR(void)
 {
     static uint16_t ledTaskCnt = 0;
     static uint16_t oledRefreshAcc = 0;
+    static uint16_t keyboardTaskCnt = 0;
 
     oledRefreshAcc = (uint16_t)(oledRefreshAcc + OLED_REFRESH_RATE_HZ);
     if (oledRefreshAcc >= SLOW_TASK_RATE_HZ)
@@ -55,6 +57,12 @@ __interrupt void INT_myCPUTIMER0_ISR(void)
     {
         ledTaskCnt = 0U;
         LED_TOGGLE();
+    }
+
+    if (++keyboardTaskCnt >= KEYBOARD_POLL_MS)
+    {
+        keyboardTaskCnt = 0U;
+        KeyBoard_RequestScan();
     }
 
     CPUTimer_clearOverflowFlag(CPUTIMER0_BASE);
@@ -87,6 +95,7 @@ RAMFUNC __interrupt void ADC_SamplingISR(void)
 
 void Loop(void)
 {
+    KeyBoard_Task();     // 50ms轮询周期，由CPUTIMER0置位，在主循环执行读键
     OLED_Display_Task(); // 10ms刷新周期 由CPUTIMER0调度
 }
 void Setup(void)
@@ -110,8 +119,7 @@ void Setup(void)
     // RMS 有效值计算初始化
     RMS_Init(&Uan_RMS);
 
-    Keyboard_Init();       // 初始化键盘GPIO
-    KEYBOARD_TIMER_Init(); // 初始化键盘CPUTIMER1中断
+    Keyboard_Init(); // 初始化键盘GPIO，轮询事件由CPUTIMER0分频产生
 
     Interrupt_enable(INT_ADCA1); // 使能主控中断
 
